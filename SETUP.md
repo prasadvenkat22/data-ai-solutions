@@ -79,10 +79,6 @@ ssh root@142.93.177.153
 Install Docker:
 ```bash
 curl -fsSL https://get.docker.com | sh
-```
-
-Install Git:
-```bash
 apt-get install -y git
 ```
 
@@ -104,15 +100,7 @@ Site runs at **http://142.93.177.153:3000**
 
 ## 6. Redeploy After Code Changes
 
-Every time you push new code, SSH in and run:
-
-```bash
-cd /opt/data-ai-solutions
-git pull
-docker compose up -d --build
-```
-
-Or from your local machine (if SSH key is set up):
+From your local machine (SSH key required):
 
 ```bash
 ssh root@142.93.177.153 "cd /opt/data-ai-solutions && git pull && docker compose up -d --build"
@@ -120,96 +108,261 @@ ssh root@142.93.177.153 "cd /opt/data-ai-solutions && git pull && docker compose
 
 ---
 
-## 7. Optional — Run on Port 80 with Nginx
+## 7. Domain & SSL Setup (HTTPS)
 
-Install Nginx on the server:
+This project uses domain **dataiqsystems.com** with free Let's Encrypt SSL.
+
+### 7.1 Buy a Domain
+Purchase from Namecheap (~$12/yr). Skip any SSL upsells — SSL is free via Let's Encrypt.
+
+### 7.2 Point DNS to Server
+In Namecheap → Domain List → Manage → Advanced DNS, add:
+
+| Type | Host | Value |
+|------|------|-------|
+| A Record | `@` | `142.93.177.153` |
+| A Record | `www` | `142.93.177.153` |
+
+Wait 5–30 minutes for DNS to propagate. Verify with:
 ```bash
-apt-get install -y nginx
+nslookup dataiqsystems.com 8.8.8.8
 ```
 
-Create config `/etc/nginx/sites-available/dataai`:
+### 7.3 Architecture Note
+This server runs an existing Nginx Docker container (from the FastAPI stack at `/opt/fastapi`)
+that already handles port 80. The Next.js app runs as a separate Docker container on port 3000.
+
+**Key setup steps performed:**
+
+**Step 1 — Connect Next.js container to FastAPI Docker network:**
+```bash
+docker network connect fastapi_default data-ai-solutions-web-1
+```
+This gives the Nginx container access to the Next.js app.
+Next.js container IP on fastapi_default network: `172.18.0.7`
+
+**Step 2 — Add volumes to Nginx in `/opt/fastapi/docker-compose.yml`:**
+```yaml
+nginx:
+  volumes:
+    - ./app/nginx/conf.d:/etc/nginx/conf.d
+    - /var/www/certbot:/var/www/certbot    # for SSL challenge
+    - /etc/letsencrypt:/etc/letsencrypt    # for SSL certs
+  ports:
+    - 80:80
+    - 443:443                              # added for HTTPS
+```
+
+**Step 3 — Create Nginx config for the domain:**
+
+File: `/opt/fastapi/app/nginx/conf.d/dataiqsystems.conf`
 ```nginx
+# Redirect HTTP to HTTPS
 server {
     listen 80;
-    server_name 142.93.177.153;
+    server_name dataiqsystems.com www.dataiqsystems.com;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
 
     location / {
-        proxy_pass http://localhost:3000;
+        return 301 https://$host$request_uri;
+    }
+}
+
+# HTTPS
+server {
+    listen 443 ssl;
+    server_name dataiqsystems.com www.dataiqsystems.com;
+
+    ssl_certificate /etc/letsencrypt/live/dataiqsystems.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/dataiqsystems.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://172.18.0.7:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
     }
 }
 ```
 
-Enable and restart:
+**Step 4 — Recreate Nginx container with new volumes:**
 ```bash
-ln -s /etc/nginx/sites-available/dataai /etc/nginx/sites-enabled/
-nginx -t
-systemctl restart nginx
+docker stop nginx && docker rm nginx
+cd /opt/fastapi && docker compose up -d nginx
 ```
 
-Site now accessible at **http://142.93.177.153** (port 80).
+**Step 5 — Get free SSL certificate:**
+```bash
+apt-get install -y certbot
+certbot certonly --webroot -w /var/www/certbot \
+  -d dataiqsystems.com -d www.dataiqsystems.com \
+  --non-interactive --agree-tos \
+  --email venkatangirala@gmail.com
+```
+
+**Step 6 — Recreate Nginx again with SSL config active:**
+```bash
+docker stop nginx && docker rm nginx
+cd /opt/fastapi && docker compose up -d nginx
+```
+
+### 7.4 SSL Auto-Renewal
+Certbot installs a cron job automatically. To test renewal manually:
+```bash
+certbot renew --dry-run
+```
 
 ---
 
-## 8. GitHub Setup (First Time)
+## 8. Troubleshooting
+
+### Site not loading after redeploy
+```bash
+# Check container is running
+docker ps | grep data-ai-solutions
+
+# View logs
+docker logs data-ai-solutions-web-1 --tail 50
+
+# Restart container
+cd /opt/data-ai-solutions && docker compose restart
+```
+
+### Next.js container IP changed after restart
+If the container was recreated, its IP on the `fastapi_default` network may change.
+Check and update the Nginx config:
+```bash
+# Get current IP
+docker inspect data-ai-solutions-web-1 \
+  --format '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}'
+
+# If IP changed, update /opt/fastapi/app/nginx/conf.d/dataiqsystems.conf
+# Change proxy_pass http://OLD_IP:3000 to proxy_pass http://NEW_IP:3000
+# Then reload nginx
+docker exec nginx nginx -s reload
+```
+
+### Re-connect Next.js container to FastAPI network (after full rebuild)
+```bash
+docker network connect fastapi_default data-ai-solutions-web-1
+```
+
+### Nginx not starting — port 80 already in use
+```bash
+# Find what's using port 80
+ss -tlnp | grep ':80'
+
+# If it's another Docker container, stop it first
+docker stop <container_name>
+```
+
+### SSL certificate expired or missing
+```bash
+certbot renew
+docker exec nginx nginx -s reload
+```
+
+### Check Nginx config is valid
+```bash
+docker exec nginx nginx -t
+```
+
+### View Nginx logs
+```bash
+docker logs nginx --tail 50
+```
+
+### DNS not propagated yet
+```bash
+nslookup dataiqsystems.com 8.8.8.8
+# Should return 142.93.177.153
+```
+
+---
+
+## 9. GitHub Setup (First Time)
 
 ```bash
-# Configure git
 git config --global user.name "Your Name"
 git config --global user.email "your@email.com"
 
 # Create repo on github.com/new, then:
-git remote add origin https://github.com/prasadvenkat22/data-ai-solutions.git
+git remote add origin https://YOUR_TOKEN@github.com/prasadvenkat22/data-ai-solutions.git
 git push -u origin master
 ```
 
 ---
 
-## 9. Project Structure
+## 10. Project Structure
 
 ```
 data-ai-solutions/
 ├── src/
 │   ├── components/
 │   │   ├── Layout.tsx        # Footer + navbar wrapper
-│   │   ├── Navbar.tsx        # Top navigation
-│   │   └── AIChatWidget.tsx  # Bottom-right AI chat
+│   │   ├── Navbar.tsx        # Top navigation with dropdowns
+│   │   └── AIChatWidget.tsx  # Bottom-right AI chat with file upload
 │   ├── lib/
 │   │   └── api.ts            # FastAPI client functions
 │   ├── pages/
-│   │   ├── index.tsx         # Home page
-│   │   ├── services.tsx      # Services listing
-│   │   ├── customers.tsx     # Customer CRUD
-│   │   ├── users.tsx         # User management
-│   │   └── registrations.tsx # Demo booking
+│   │   ├── index.tsx         # Home page with service cards
+│   │   ├── services.tsx      # Services listing + add service form
+│   │   ├── customers.tsx     # Customer CRUD (list, add, edit, delete)
+│   │   ├── users.tsx         # User management + registration
+│   │   └── registrations.tsx # Demo booking with calendar picker
 │   ├── styles/
-│   │   └── globals.css       # Global styles + datepicker theme
+│   │   └── globals.css       # Global styles + dark datepicker theme
 │   └── types/
-│       └── index.ts          # TypeScript types
+│       └── index.ts          # TypeScript interfaces
 ├── Dockerfile                # Multi-stage Docker build
-├── docker-compose.yml        # Docker Compose config
-├── .env.local.example        # Environment template
+├── docker-compose.yml        # Docker Compose config (port 3000)
+├── .env.local.example        # Environment variable template
 └── SETUP.md                  # This file
 ```
 
 ---
 
-## 10. FastAPI Backend Endpoints Used
+## 11. Server Architecture
 
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /CRUD/register/` | Register user |
-| `GET /CRUD/users/` | List users |
-| `GET/POST /CRUD/customers/` | Customer management |
-| `PUT/DELETE /CRUD/customers/{id}` | Edit/delete customer |
-| `GET/POST /CRUD/services/` | Services catalog |
-| `GET/POST /CRUD/registrations/` | Demo registrations |
-| `POST /api/genai/llm` | AI text chat |
-| `POST /api/genai/query/upload` | AI file upload + query |
+```
+Internet
+   │
+   ▼
+Nginx (Docker, port 80/443)          ← /opt/fastapi/docker-compose.yml
+   ├── dataiqsystems.com  ──────────► Next.js (Docker, port 3000)
+   │                                   /opt/data-ai-solutions/
+   ├── /CRUD/*            ──────────► FastAPI (Docker, port 8000)
+   ├── /api/*             ──────────► FastAPI (Docker, port 8000)
+   └── /                  ──────────► Streamlit (Docker, port 8501)
+
+PostgreSQL (Docker, port 5432)
+MongoDB    (Docker, port 27017)
+```
+
+---
+
+## 12. FastAPI Backend Endpoints Used
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/CRUD/register/` | POST | Register new user |
+| `/CRUD/users/` | GET | List all users |
+| `/CRUD/customers/` | GET/POST | List / create customers |
+| `/CRUD/customers/{id}` | PUT/DELETE | Update / delete customer |
+| `/CRUD/services/` | GET/POST | Services catalog |
+| `/CRUD/registrations/` | GET/POST | Demo registrations |
+| `/api/genai/llm` | POST | AI text chat |
+| `/api/genai/query/upload` | POST | AI file upload + RAG query |
 
 ---
 
@@ -217,3 +370,4 @@ data-ai-solutions/
 
 - Email: venkatangirala@gmail.com
 - Phone: 1-201-888-4128
+- Site: https://dataiqsystems.com
