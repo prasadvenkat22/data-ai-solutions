@@ -4,6 +4,8 @@ import {
   CalendarCheck, Plus, X, Loader2, CheckCircle2, AlertCircle,
   Clock, User, Building2, Phone, Mail, MapPin, FileText, Search,
 } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { api } from '@/lib/api';
 import type { RegistrationBase } from '@/types';
 
@@ -340,13 +342,19 @@ export default function RegistrationsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1.5">Preferred Demo Date & Time *</label>
-                  <input
+                  <DatePicker
+                    selected={form.demodate ? new Date(form.demodate) : null}
+                    onChange={(date: Date | null) => setForm({ ...form, demodate: date ? date.toISOString() : '' })}
+                    showTimeSelect
+                    timeFormat="HH:mm"
+                    timeIntervals={30}
+                    dateFormat="MMMM d, yyyy h:mm aa"
+                    minDate={new Date()}
+                    placeholderText="Select date & time…"
                     required
-                    type="datetime-local"
-                    value={form.demodate}
-                    onChange={(e) => setForm({ ...form, demodate: e.target.value })}
-                    min={new Date().toISOString().slice(0, 16)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500 cursor-pointer"
+                    wrapperClassName="w-full"
+                    calendarClassName="!bg-slate-800 !border-slate-700 !rounded-xl !shadow-2xl"
                   />
                 </div>
                 <div>
