@@ -63,7 +63,8 @@ export default function Layout({ children }: { children: ReactNode }) {
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contact</h4>
               <ul className="space-y-2 text-sm text-slate-400">
-                <li>info@dataaisolutions.com</li>
+                <li><a href="mailto:venkatangirala@gmail.com" className="hover:text-indigo-400 transition-colors">venkatangirala@gmail.com</a></li>
+                <li><a href="tel:12018884128" className="hover:text-indigo-400 transition-colors">1-201-888-4128</a></li>
                 <li>On-shore & Off-shore</li>
                 <li>24/7 Incident Support</li>
               </ul>
