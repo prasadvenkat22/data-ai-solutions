@@ -85,9 +85,25 @@ export default function AIChatWidget() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = Array.from(e.target.files || []).filter(
-      (f) => f.type === 'application/pdf' || f.type === 'text/csv' || f.name.endsWith('.csv')
-    );
+    const CSV_MAX = 1 * 1024 * 1024;  // 1 MB
+    const PDF_MAX = 5 * 1024 * 1024;  // 5 MB
+    const selected: File[] = [];
+    const errors: string[] = [];
+
+    Array.from(e.target.files || []).forEach((f) => {
+      const isCSV = f.type === 'text/csv' || f.name.endsWith('.csv');
+      const isPDF = f.type === 'application/pdf';
+      if (!isCSV && !isPDF) return;
+      if (isCSV && f.size > CSV_MAX) {
+        errors.push(`${f.name} exceeds the 1 MB CSV limit.`);
+      } else if (isPDF && f.size > PDF_MAX) {
+        errors.push(`${f.name} exceeds the 5 MB PDF limit.`);
+      } else {
+        selected.push(f);
+      }
+    });
+
+    if (errors.length > 0) setError(errors.join(' '));
     setFiles((prev) => [...prev, ...selected]);
     e.target.value = '';
   };
