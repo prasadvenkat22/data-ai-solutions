@@ -99,12 +99,15 @@ export const api = {
     delete: (id: number) => apiDelete(`/CRUD/registrations/${id}`),
   },
   images: {
-    upload: (file: File) => {
+    upload: (file: File, entity: string, id: number) => {
       const fd = new FormData();
       fd.append('file', file);
-      return apiUpload<any>('/images/upload', fd);
+      return apiUpload<{ entity: string; id: number; image_url: string }>(
+        `/images/upload?entity=${entity}&id=${id}`,
+        fd
+      );
     },
-    getUrl: (entity: string, id: number) => `${API_BASE}/images/${entity}/${id}`,
+    getUrl: (entity: string, id: number) => `${API_BASE}/static/${entity}s/${id}.png`,
     delete: (entity: string, id: number) => apiDelete(`/images/${entity}/${id}`),
   },
 };

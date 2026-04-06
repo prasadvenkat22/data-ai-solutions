@@ -77,17 +77,20 @@ export default function ProductsPage() {
     setSubmitting(true);
     setError(null);
     try {
+      let savedId: number;
       if (editProduct) {
         await api.products.delete(editProduct.id);
         const created = await api.products.create(form);
         setProducts((prev) => prev.map((p) => (p.id === editProduct.id ? created : p)));
+        savedId = created.id;
         setSuccess('Product updated successfully.');
       } else {
         const created = await api.products.create(form);
         setProducts((prev) => [...prev, created]);
+        savedId = created.id;
         setSuccess('Product created successfully.');
       }
-      if (imageFile) await api.images.upload(imageFile);
+      if (imageFile) await api.images.upload(imageFile, 'product', savedId);
       setShowForm(false);
       setTimeout(() => setSuccess(null), 4000);
     } catch (err: any) {

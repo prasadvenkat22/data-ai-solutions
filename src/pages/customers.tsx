@@ -89,7 +89,7 @@ export default function CustomersPage() {
       }
       if (imageFile && savedId) {
         setUploadingImage(true);
-        await api.images.upload(imageFile);
+        await api.images.upload(imageFile, 'customer', savedId);
         setUploadingImage(false);
       }
       setShowForm(false);

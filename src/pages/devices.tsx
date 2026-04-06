@@ -74,17 +74,20 @@ export default function DevicesPage() {
     setSubmitting(true);
     setError(null);
     try {
+      let savedId: number;
       if (editDevice) {
         await api.devices.delete(editDevice.id);
         const created = await api.devices.create(form);
         setDevices((prev) => prev.map((d) => (d.id === editDevice.id ? created : d)));
+        savedId = created.id;
         setSuccess('Device updated successfully.');
       } else {
         const created = await api.devices.create(form);
         setDevices((prev) => [...prev, created]);
+        savedId = created.id;
         setSuccess('Device created successfully.');
       }
-      if (imageFile) await api.images.upload(imageFile);
+      if (imageFile) await api.images.upload(imageFile, 'device', savedId);
       setShowForm(false);
       setTimeout(() => setSuccess(null), 4000);
     } catch (err: any) {

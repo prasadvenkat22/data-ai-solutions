@@ -149,7 +149,7 @@ export default function ServicesPage() {
     setError(null);
     try {
       const created = await api.services.create({ ...form, createdate: new Date().toISOString() });
-      if (imageFile) await api.images.upload(imageFile);
+      if (imageFile) await api.images.upload(imageFile, 'service', created.id);
       setServices((prev) => [...prev, created]);
       setSuccess('Service created successfully!');
       setShowForm(false);
