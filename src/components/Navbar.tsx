@@ -24,8 +24,8 @@ import clsx from 'clsx';
 const navLinks = [
   { label: 'Home', href: '/', icon: LayoutDashboard },
   {
-    label: 'Consulting Services',
-    href: '/csservices',
+    label: '',
+    href: '/services',
     icon: BrainCircuit,
     children: [
       { label: 'Cloud Platforms', href: '/services#cloud' },
@@ -44,6 +44,8 @@ const navLinks = [
       { label: 'Users', href: '/users' },
       { label: 'Devices', href: '/devices' },
       { label: 'Products', href: '/products' },
+      { label: 'Services', href: '/csservices#catalog' },
+      { label: 'Registrations', href: '/registrations' },
     ],
   },
   {
