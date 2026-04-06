@@ -101,7 +101,7 @@ export default function AIChatWidget() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const CSV_MAX = 1 * 1024 * 1024;  // 1 MB
-    const PDF_MAX = 5 * 1024 * 1024;  // 5 MB
+    const PDF_MAX = 1 * 1024 * 1024;  // 1 MB
     const selected: File[] = [];
     const errors: string[] = [];
 
@@ -110,9 +110,9 @@ export default function AIChatWidget() {
       const isPDF = f.type === 'application/pdf';
       if (!isCSV && !isPDF) return;
       if (isCSV && f.size > CSV_MAX) {
-        errors.push(`${f.name} exceeds the 1 MB CSV limit.`);
+        errors.push(`${f.name} exceeds the 1 MB limit.`);
       } else if (isPDF && f.size > PDF_MAX) {
-        errors.push(`${f.name} exceeds the 5 MB PDF limit.`);
+        errors.push(`${f.name} exceeds the 1 MB limit.`);
       } else {
         selected.push(f);
       }
