@@ -24,7 +24,7 @@ import clsx from 'clsx';
 const navLinks = [
   { label: 'Home', href: '/', icon: LayoutDashboard },
   {
-    label: '',
+    label: 'Consulting',
     href: '/services',
     icon: BrainCircuit,
     children: [
@@ -116,16 +116,18 @@ export default function Navbar() {
                 </Link>
 
                 {link.children && openDropdown === link.label && (
-                  <div className="absolute top-full left-0 mt-1 w-52 bg-slate-800 border border-slate-700 rounded-xl shadow-xl py-1 animate-in fade-in slide-in-from-top-2 duration-150">
-                    {link.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        className="block px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
+                  <div className="absolute top-full left-0 pt-2 w-52 z-50">
+                    <div className="bg-slate-800 border border-slate-700 rounded-xl shadow-xl py-1">
+                      {link.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className="block px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
