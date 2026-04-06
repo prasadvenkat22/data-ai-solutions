@@ -27,6 +27,72 @@ export interface CustomerResponse extends CustomerCreate {
   updated_at?: string;
 }
 
+export interface DeviceCreate {
+  customer_id: number;
+  device_type?: string;
+  serial_number?: string;
+  model?: string;
+  firmware_version?: string;
+  status?: string;
+}
+
+export interface DeviceResponse extends DeviceCreate {
+  id: number;
+  created_at?: string;
+}
+
+export interface TransactionCreate {
+  amount: number;
+  category: string;
+  description: string;
+  is_income: boolean;
+  date: string;
+  user_id?: number;
+  customer_id?: number;
+}
+
+export interface TransactionResponse extends TransactionCreate {
+  id: number;
+  created_at?: string;
+}
+
+export interface InvoiceCreate {
+  customer_id: number;
+  service_request_id?: number;
+  amount: number;
+  status: 'draft' | 'sent' | 'paid' | 'overdue';
+}
+
+export interface InvoiceResponse extends InvoiceCreate {
+  id: number;
+  created_at?: string;
+}
+
+export interface ProductCreate {
+  name: string;
+  description?: string;
+  price: number;
+  stock?: number;
+  category?: string;
+  sku?: string;
+  is_active?: boolean;
+}
+
+export interface ProductResponse extends ProductCreate {
+  id: number;
+  created_at?: string;
+}
+
+export interface RoleCreate {
+  role: 'user' | 'admin';
+  desc: string;
+}
+
+export interface RoleResponse extends RoleCreate {
+  id: number;
+  created_at?: string;
+}
+
 export interface RegistrationBase {
   firstname: string;
   lastname: string;

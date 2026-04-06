@@ -11,31 +11,58 @@ import {
   Building2,
   CalendarCheck,
   LayoutDashboard,
+  Cpu,
+  ArrowLeftRight,
+  FileText,
+  Package,
+  Shield,
+  Wrench,
+  Layers,
 } from 'lucide-react';
 import clsx from 'clsx';
 
 const navLinks = [
   { label: 'Home', href: '/', icon: LayoutDashboard },
   {
-    label: 'Services',
-    href: '/services',
+    label: 'Consulting Services',
+    href: '/csservices',
     icon: BrainCircuit,
     children: [
       { label: 'Cloud Platforms', href: '/services#cloud' },
       { label: 'AI & ML Solutions', href: '/services#ai' },
       { label: 'Data Analytics', href: '/services#analytics' },
       { label: 'Custom Implementations', href: '/services#custom' },
+      { label: 'Service Catalog', href: '/services#catalog' },
     ],
   },
-  { label: 'Customers', href: '/customers', icon: Building2 },
-  { label: 'Users', href: '/users', icon: Users },
   {
-    label: 'Demos',
-    href: '/registrations',
-    icon: CalendarCheck,
+    label: 'Data',
+    href: '/customers',
+    icon: Layers,
     children: [
-      { label: 'Book a Demo', href: '/registrations#book' },
-      { label: 'All Registrations', href: '/registrations#list' },
+      { label: 'Customers', href: '/customers' },
+      { label: 'Users', href: '/users' },
+      { label: 'Devices', href: '/devices' },
+      { label: 'Products', href: '/products' },
+    ],
+  },
+  {
+    label: 'Operations',
+    href: '/service-requests',
+    icon: Wrench,
+    children: [
+      { label: 'Service Requests', href: '/service-requests' },
+      { label: 'Transactions', href: '/transactions' },
+      { label: 'Invoices', href: '/invoices' },
+    ],
+  },
+  {
+    label: 'Config',
+    href: '/roles',
+    icon: Shield,
+    children: [
+      { label: 'Roles', href: '/roles' },
+      { label: 'Demos', href: '/registrations' },
     ],
   },
 ];
@@ -46,7 +73,7 @@ export default function Navbar() {
   const router = useRouter();
 
   const isActive = (href: string) =>
-    href === '/' ? router.pathname === '/' : router.pathname.startsWith(href);
+    href === '/' ? router.pathname === '/' : router.pathname.startsWith(href.split('#')[0]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50 shadow-lg">

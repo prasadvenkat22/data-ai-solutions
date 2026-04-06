@@ -42,6 +42,7 @@ export const api = {
     list: () => apiGet<any[]>('/CRUD/users/'),
     get: (id: number) => apiGet<any>(`/CRUD/users/${id}`),
     register: (data: any) => apiPost<any>('/CRUD/register/', data),
+    delete: (id: number) => apiDelete(`/CRUD/users/${id}`),
   },
   customers: {
     list: () => apiGet<any[]>('/CRUD/customers/'),
@@ -50,13 +51,17 @@ export const api = {
     update: (id: number, data: any) => apiPut<any>(`/CRUD/customers/${id}`, data),
     delete: (id: number) => apiDelete(`/CRUD/customers/${id}`),
   },
+  devices: {
+    list: () => apiGet<any[]>('/CRUD/devices/'),
+    get: (id: number) => apiGet<any>(`/CRUD/devices/${id}`),
+    create: (data: any) => apiPost<any>('/CRUD/devices/', data),
+    delete: (id: number) => apiDelete(`/CRUD/devices/${id}`),
+    byCustomer: (customerId: number) => apiGet<any[]>(`/CRUD/customers/${customerId}/devices`),
+  },
   services: {
     list: () => apiGet<any[]>('/CRUD/services/'),
     create: (data: any) => apiPost<any>('/CRUD/services/', data),
-  },
-  registrations: {
-    list: () => apiGet<any[]>('/CRUD/registrations/'),
-    create: (data: any) => apiPost<any>('/CRUD/registrations/', data),
+    delete: (id: number) => apiDelete(`/CRUD/services/${id}`),
   },
   serviceRequests: {
     list: () => apiGet<any[]>('/CRUD/service-requests/'),
@@ -64,9 +69,43 @@ export const api = {
     create: (data: any) => apiPost<any>('/CRUD/service-requests/', data),
     updateStatus: (id: number, status: string) =>
       apiPut<any>(`/CRUD/service-requests/${id}/status`, { status }),
+    delete: (id: number) => apiDelete(`/CRUD/service-requests/${id}`),
+  },
+  transactions: {
+    list: () => apiGet<any[]>('/CRUD/transactions/'),
+    create: (data: any) => apiPost<any>('/CRUD/transactions/', data),
+    delete: (id: number) => apiDelete(`/CRUD/transactions/${id}`),
+  },
+  invoices: {
+    list: () => apiGet<any[]>('/CRUD/invoices/'),
+    get: (id: number) => apiGet<any>(`/CRUD/invoices/${id}`),
+    create: (data: any) => apiPost<any>('/CRUD/invoices/', data),
+    delete: (id: number) => apiDelete(`/CRUD/invoices/${id}`),
+  },
+  products: {
+    list: () => apiGet<any[]>('/CRUD/products/'),
+    get: (id: number) => apiGet<any>(`/CRUD/products/${id}`),
+    create: (data: any) => apiPost<any>('/CRUD/products/', data),
+    delete: (id: number) => apiDelete(`/CRUD/products/${id}`),
   },
   roles: {
     list: () => apiGet<any[]>('/CRUD/roles/'),
+    create: (data: any) => apiPost<any>('/CRUD/roles/', data),
+    delete: (id: number) => apiDelete(`/CRUD/roles/${id}`),
+  },
+  registrations: {
+    list: () => apiGet<any[]>('/CRUD/registrations/'),
+    create: (data: any) => apiPost<any>('/CRUD/registrations/', data),
+    delete: (id: number) => apiDelete(`/CRUD/registrations/${id}`),
+  },
+  images: {
+    upload: (file: File) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      return apiUpload<any>('/images/upload', fd);
+    },
+    getUrl: (entity: string, id: number) => `${API_BASE}/images/${entity}/${id}`,
+    delete: (entity: string, id: number) => apiDelete(`/images/${entity}/${id}`),
   },
 };
 

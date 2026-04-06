@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import {
   Users, UserPlus, X, Loader2, CheckCircle2, AlertCircle, Search,
-  Mail, Calendar, Shield,
+  Mail, Calendar, Shield, Trash2,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { UserResponse } from '@/types';
@@ -16,6 +16,7 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   useEffect(() => {
     api.users.list().then(setUsers).catch(() => setUsers([])).finally(() => setLoading(false));
@@ -36,6 +37,18 @@ export default function UsersPage() {
       setError(err.message);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await api.users.delete(id);
+      setUsers((prev) => prev.filter((u) => u.id !== id));
+      setDeleteId(null);
+      setSuccess('User deleted.');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
@@ -72,6 +85,11 @@ export default function UsersPage() {
             <CheckCircle2 className="w-4 h-4" /> {success}
           </div>
         )}
+        {error && !showForm && (
+          <div className="flex items-center gap-2 bg-red-900/30 border border-red-700/50 rounded-xl px-4 py-3 mb-6 text-red-300 text-sm">
+            <AlertCircle className="w-4 h-4" /> {error}
+          </div>
+        )}
 
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -97,14 +115,22 @@ export default function UsersPage() {
                 key={u.id}
                 className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 hover:border-indigo-500/40 transition-colors"
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                    {u.name.charAt(0).toUpperCase()}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                      {u.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-white font-semibold truncate">{u.name}</p>
+                      <p className="text-slate-500 text-xs">ID #{u.id}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-white font-semibold truncate">{u.name}</p>
-                    <p className="text-slate-500 text-xs">ID #{u.id}</p>
-                  </div>
+                  <button
+                    onClick={() => setDeleteId(u.id)}
+                    className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-colors flex-shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-slate-400 text-sm">
@@ -187,6 +213,20 @@ export default function UsersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirm */}
+      {deleteId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6">
+            <h3 className="text-white font-bold text-lg mb-2">Delete User?</h3>
+            <p className="text-slate-400 text-sm mb-6">This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteId(null)} className="flex-1 px-4 py-2.5 text-slate-300 border border-slate-700 rounded-xl hover:bg-slate-800 text-sm font-medium">Cancel</button>
+              <button onClick={() => handleDelete(deleteId)} className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-500 text-sm font-semibold">Delete</button>
+            </div>
           </div>
         </div>
       )}

@@ -64,14 +64,29 @@ export default function AIChatWidget() {
       let reply: string;
       if (uploadedFiles.length > 0) {
         const res = await genaiQueryUpload(uploadedFiles, text || 'Summarize this document.');
-        reply = res.results.map((r) => r.content).join('\n\n') || 'No results found.';
+        if (!res.results || res.results.length === 0) {
+          reply = 'The file was processed but no content was found. Please check the file and try again.';
+        } else {
+          reply = res.results
+            .filter((r) => r.content)
+            .map((r) => r.content)
+            .join('\n\n');
+          if (!reply) reply = 'No relevant content found in the uploaded file.';
+        }
       } else {
         const res = await genaiLLM(text);
         reply = res.content;
       }
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
+      const msg = err.message || '';
+      if (msg.includes('413') || msg.toLowerCase().includes('too large')) {
+        setError('File is too large. Please upload a CSV under 1 MB or a PDF under 5 MB.');
+      } else if (msg.includes('502') || msg.includes('unreachable')) {
+        setError('AI backend is currently unavailable. Please try again shortly.');
+      } else {
+        setError(msg || 'Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

@@ -181,6 +181,13 @@ server {
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
 
+    # Allow up to 10MB uploads (needed for AI file uploads — PDF/CSV)
+    client_max_body_size 10m;
+
+    # Increase timeouts for AI processing (LLM calls can take 30+ seconds)
+    proxy_read_timeout 120s;
+    proxy_connect_timeout 10s;
+
     location / {
         proxy_pass http://172.18.0.7:3000;
         proxy_http_version 1.1;

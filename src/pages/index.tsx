@@ -74,10 +74,10 @@ const services = [
 ];
 
 const stats = [
-  { label: 'Projects Delivered', value: '200+', icon: CheckCircle2 },
-  { label: 'Enterprise Clients', value: '80+', icon: Users },
+  { label: 'Projects Delivered', value: '20+', icon: CheckCircle2 },
+  { label: 'Enterprise Clients', value: '8+', icon: Users },
   { label: 'Cloud Platforms', value: '3', icon: Cloud },
-  { label: 'Countries Served', value: '15+', icon: Globe2 },
+  { label: 'Countries Served', value: '2+', icon: Globe2 },
 ];
 
 const technologies = [
@@ -184,7 +184,7 @@ export default function HomePage() {
       {/* Services Cards */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Our Services</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Our Consulting Services</h2>
           <p className="text-slate-400 text-lg max-w-2xl mx-auto">
             Comprehensive data and AI consulting across the entire technology stack.
           </p>
