@@ -25,14 +25,14 @@ const navLinks = [
   { label: 'Home', href: '/', icon: LayoutDashboard },
   {
     label: 'Consulting',
-    href: '/services',
+    href: '/csservices',
     icon: BrainCircuit,
     children: [
-      { label: 'Cloud Platforms', href: '/services#cloud' },
-      { label: 'AI & ML Solutions', href: '/services#ai' },
-      { label: 'Data Analytics', href: '/services#analytics' },
-      { label: 'Custom Implementations', href: '/services#custom' },
-      { label: 'Service Catalog', href: '/services#catalog' },
+      { label: 'Cloud Platforms', href: '/csservices#cloud' },
+      { label: 'AI & ML Solutions', href: '/csservices#ai' },
+      { label: 'Data Analytics', href: '/csservices#analytics' },
+      { label: 'Custom Implementations', href: '/csservices#custom' },
+      { label: 'Service Catalog', href: '/csservices#catalog' },
     ],
   },
   {
