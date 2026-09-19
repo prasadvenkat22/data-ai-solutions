@@ -96,10 +96,10 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>DataAI Solutions — Data Analytics & AI Consulting</title>
+        <title>Data AI Systems — Data, AI and an Options Auto-Trader</title>
         <meta
           name="description"
-          content="Bringing AI to where data lives. Expert consulting in cloud platforms, Databricks, Snowflake, Azure, AWS, GCP and custom AI implementations."
+          content="Data AI Systems: data and AI consulting on Databricks, Snowflake, Azure, AWS and GCP, and a live options auto-trader with EV/Pwin ranking, news and tape gates, and an AI agent that reads its own book."
         />
       </Head>
 
@@ -129,9 +129,9 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight mb-6">
-              <span className="text-white">Data </span>
+              <span className="text-white">Data AI </span>
               <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                AI Solutions
+                Systems
               </span>
             </h1>
 
@@ -139,9 +139,10 @@ export default function HomePage() {
               Bringing AI to where data lives.
             </p>
             <p className="text-lg text-slate-400 leading-relaxed mb-8 max-w-2xl">
-              We specialize in consulting solutions for data analytics and AI — new implementations,
-              on-premise to cloud migrations, and custom AI for Databricks, Snowflake, Azure, AWS, and GCP.
-              On-shore and off-shore presence for development, support, and incident resolution.
+              Consulting for data analytics and AI — new implementations, on-premise to cloud migrations,
+              and custom AI on Databricks, Snowflake, Azure, AWS and GCP. And a working example of our own:
+              a live options auto-trader that ranks spreads by expected value, gates entries on news and the
+              tape, manages every exit, and answers questions about its own book through an AI agent.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
@@ -159,6 +160,64 @@ export default function HomePage() {
                 Explore Services
                 <ArrowRight className="w-5 h-5" />
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Auto-Trader */}
+      <section className="bg-slate-950 border-y border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-emerald-900/40 border border-emerald-700/50 rounded-full px-4 py-1.5 mb-6">
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-300 text-sm font-medium">Live system · real account</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">The Options Auto-Trader</h2>
+              <p className="text-slate-400 text-lg leading-relaxed mb-6">
+                Two books run on their own every trading day: a same-day book that rotates single-name debit
+                spreads from the open, and a weekly book that buys into Friday. Every candidate has to clear the
+                same chain before an order goes out, and every open position is managed by an exit ladder that
+                books profit and cuts loss without a hand on it.
+              </p>
+              <ul className="space-y-3 text-slate-300 text-sm">
+                {[
+                  ['Expected value first', 'Every strike pair is priced by Pwin against the win rate the market demands; only positive edge is considered.'],
+                  ['Three vetoes', 'An objective macro read, a per-name news grade from sixteen wires and filings, and the tape itself — price against VWAP, volume, and the option chain.'],
+                  ['Exits that scale', 'Stops, stalls and targets tuned on two hundred settled trades for same-day spreads, and a ladder that tightens by sessions left for weeklies.'],
+                  ['An agent that reads its book', 'Ask in plain English; a guarded read-only SQL agent answers from the live database and shows the query.'],
+                ].map(([t, d]) => (
+                  <li key={t} className="flex gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span><span className="text-white font-medium">{t}.</span> {d}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex gap-3 mt-8">
+                <Link href="/trading" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-500 hover:to-teal-500 transition-all">
+                  Open the trading desk <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link href="/ai" className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-slate-200 font-semibold rounded-xl border border-slate-700 hover:bg-slate-700">
+                  Ask the book
+                </Link>
+              </div>
+              <p className="text-xs text-slate-500 mt-4">Trading desk and AI lab require a registered account. Options trading carries risk of loss; this is our own system, not advice.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                ['Same-day book', '10 names · every 15 min from 09:45 · flatten 15:45'],
+                ['Weekly book', '18 names · Mon–Wed 09:50 & 13:50 · into Friday'],
+                ['Gates', 'macro · news · VWAP tape · options flow · EV / Pwin / edge'],
+                ['Exit ladder', 'hard & soft stops · stall · target · intrinsic target · drag guard'],
+                ['News', 'Polygon + 16 wires · S&P index events · SEC 8-K / 13D'],
+                ['AI agent', 'Gemini · guarded read-only SQL · pgvector news search'],
+              ].map(([t, d]) => (
+                <div key={t} className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                  <div className="text-white font-semibold mb-1">{t}</div>
+                  <div className="text-slate-400 text-sm">{d}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -3,8 +3,10 @@ import Navbar from './Navbar';
 import AIChatWidget from './AIChatWidget';
 import { Database, Linkedin, Twitter, Mail } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from './AuthProvider';
 
 export default function Layout({ children }: { children: ReactNode }) {
+  const { hasRole } = useAuth();
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
       <Navbar />
@@ -20,13 +22,13 @@ export default function Layout({ children }: { children: ReactNode }) {
                   <Database className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <span className="text-white font-bold">DataAI</span>
-                  <span className="text-indigo-400 font-bold"> Solutions</span>
+                  <span className="text-white font-bold">Data AI</span>
+                  <span className="text-indigo-400 font-bold"> Systems</span>
                 </div>
               </div>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Bringing AI to where data lives. On-shore & off-shore consulting for data analytics
-                and AI transformation.
+                Bringing AI to where data lives. Data and AI consulting, and a live options auto-trader
+                with an AI agent that reads its own book.
               </p>
               <div className="flex gap-3 mt-4">
                 <a href="#" className="text-slate-500 hover:text-indigo-400 transition-colors">
@@ -54,8 +56,9 @@ export default function Layout({ children }: { children: ReactNode }) {
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Platform</h4>
               <ul className="space-y-2 text-sm text-slate-400">
+                <li><Link href="/trading" className="hover:text-indigo-400 transition-colors">Trading desk</Link></li>
+                <li><Link href="/ai" className="hover:text-indigo-400 transition-colors">AI lab</Link></li>
                 <li><Link href="/customers" className="hover:text-indigo-400 transition-colors">Customers</Link></li>
-                <li><Link href="/users" className="hover:text-indigo-400 transition-colors">Users</Link></li>
                 <li><Link href="/registrations" className="hover:text-indigo-400 transition-colors">Demo Registration</Link></li>
               </ul>
             </div>
@@ -73,7 +76,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           <div className="mt-10 pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-slate-500 text-sm">
-              © {new Date().getFullYear()} DataAI Solutions. All rights reserved.
+              © {new Date().getFullYear()} Data AI Systems · data-ai-systems.com. All rights reserved.
             </p>
             <p className="text-slate-600 text-xs">
               Cloud · Databricks · Snowflake · Azure · AWS · GCP
@@ -82,7 +85,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
       </footer>
 
-      <AIChatWidget />
+      {hasRole('admin') && <AIChatWidget />}
     </div>
   );
 }

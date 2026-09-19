@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 // Server-side backend URL — never exposed to the browser
-const BACKEND = process.env.API_BACKEND_URL || 'http://142.93.177.153:8000';
+const BACKEND = process.env.API_BACKEND_URL || 'http://localhost:8000';
 
 // Disable Next.js body parser so we can stream raw multipart data
 export const config = {

@@ -22,7 +22,7 @@ export default function AIChatWidget() {
     {
       role: 'assistant',
       content:
-        'Hello! I\'m your DataAI Solutions assistant. Ask me anything about our services, or upload a PDF/CSV file and I\'ll analyze it for you.',
+        'Hello! I\'m the Data AI Systems assistant (Gemini). Ask about the services, or upload a PDF/CSV and I\'ll analyze it. For questions about the trading book, use the AI lab.',
     },
   ]);
   const [input, setInput] = useState('');

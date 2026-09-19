@@ -1,13 +1,15 @@
+import { authFetch } from './auth';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`);
+  const res = await authFetch(path);
   if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
   return res.json();
 }
 
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await authFetch(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -17,7 +19,7 @@ async function apiPost<T>(path: string, body: unknown): Promise<T> {
 }
 
 async function apiPut<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await authFetch(path, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -27,12 +29,12 @@ async function apiPut<T>(path: string, body: unknown): Promise<T> {
 }
 
 async function apiDelete(path: string): Promise<void> {
-  const res = await fetch(`${API_BASE}${path}`, { method: 'DELETE' });
+  const res = await authFetch(path, { method: 'DELETE' });
   if (!res.ok) throw new Error(`API error ${res.status}`);
 }
 
 async function apiUpload<T>(path: string, formData: FormData): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, { method: 'POST', body: formData });
+  const res = await authFetch(path, { method: 'POST', body: formData });
   if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
   return res.json();
 }
@@ -115,9 +117,8 @@ export const api = {
 export async function genaiLLM(prompt: string) {
   return apiPost<{ content: string; metadata: Record<string, unknown> }>('/api/genai/llm', {
     prompt,
-    llm_provider: 'openai',
-    llm_model: 'gpt-4o-mini',
-    temperature: 0.0,
+    llm_provider: 'gemini',
+    llm_model: 'gemini-3.1-flash-lite',
     max_tokens: 800,
   });
 }
@@ -127,7 +128,8 @@ export async function genaiQueryUpload(files: File[], query: string) {
   files.forEach((f) => formData.append('files', f));
   formData.append('query', query);
   formData.append('username', 'web_user');
-  formData.append('llm_model', 'gpt-4o-mini');
+  formData.append('llm_provider', 'gemini');
+  formData.append('llm_model', 'gemini-3.1-flash-lite');
   formData.append('max_tokens', '512');
   return apiUpload<{ results: Array<{ id?: string; content: string; score?: number }> }>(
     '/api/genai/query/upload',

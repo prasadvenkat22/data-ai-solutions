@@ -20,6 +20,8 @@ import {
   Layers,
 } from 'lucide-react';
 import clsx from 'clsx';
+import { useAuth } from './AuthProvider';
+import { LogIn, LogOut, CandlestickChart, Bot } from 'lucide-react';
 
 const navLinks = [
   { label: 'Home', href: '/', icon: LayoutDashboard },
@@ -67,12 +69,25 @@ const navLinks = [
       { label: 'Demos', href: '/registrations' },
     ],
   },
+  {
+    label: 'Trading',
+    href: '/trading',
+    icon: CandlestickChart,
+    children: [
+      { label: 'Positions', href: '/trading' },
+      { label: 'Closed trades', href: '/trading/history' },
+      { label: 'Screener board', href: '/trading/board' },
+      { label: 'Engine controls', href: '/trading/controls' },
+    ],
+  },
+  { label: 'AI Lab', href: '/ai', icon: Bot },
 ];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   const isActive = (href: string) =>
     href === '/' ? router.pathname === '/' : router.pathname.startsWith(href.split('#')[0]);
@@ -87,8 +102,8 @@ export default function Navbar() {
               <Database className="w-5 h-5 text-white" />
             </div>
             <div className="hidden sm:block">
-              <span className="text-white font-bold text-lg leading-tight">DataAI</span>
-              <span className="text-indigo-400 font-bold text-lg leading-tight"> Solutions</span>
+              <span className="text-white font-bold text-lg leading-tight">Data AI</span>
+              <span className="text-indigo-400 font-bold text-lg leading-tight"> Systems</span>
             </div>
           </Link>
 
@@ -134,14 +149,26 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* CTA */}
+          {/* CTA / session */}
           <div className="hidden md:flex items-center gap-2">
-            <Link
-              href="/registrations#book"
-              className="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-indigo-500/30"
-            >
-              Book a Demo
-            </Link>
+            {user ? (
+              <>
+                <span className="text-xs text-slate-400 px-2">{user.email}{user.role ? ` · ${user.role}` : ''}</span>
+                <button
+                  onClick={() => { logout(); void router.push('/'); }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800"
+                >
+                  <LogOut className="w-4 h-4" /> Sign out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-indigo-500/30"
+              >
+                <LogIn className="w-4 h-4" /> Sign in
+              </Link>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -189,13 +216,22 @@ export default function Navbar() {
             </div>
           ))}
           <div className="pt-2 border-t border-slate-800">
-            <Link
-              href="/registrations#book"
-              onClick={() => setMobileOpen(false)}
-              className="block w-full text-center px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg"
-            >
-              Book a Demo
-            </Link>
+            {user ? (
+              <button
+                onClick={() => { setMobileOpen(false); logout(); void router.push('/'); }}
+                className="block w-full text-center px-4 py-2.5 text-sm font-semibold bg-slate-800 text-white rounded-lg"
+              >
+                Sign out ({user.email})
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="block w-full text-center px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg"
+              >
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       )}
