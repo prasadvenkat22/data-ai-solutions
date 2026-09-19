@@ -118,9 +118,11 @@ function Board() {
 
 export default function BoardPage() {
   return (
-    <RequireAuth roles={['admin', 'trader']}>
+    <>
       <Head><title>Screener board — Data AI Systems</title></Head>
+    <RequireAuth roles={['admin', 'trader']}>
       <Board />
     </RequireAuth>
+    </>
   );
 }

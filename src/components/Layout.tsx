@@ -56,7 +56,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Platform</h4>
               <ul className="space-y-2 text-sm text-slate-400">
-                <li><Link href="/trading" className="hover:text-indigo-400 transition-colors">Trading desk</Link></li>
+                <li><Link href="/desk" className="hover:text-indigo-400 transition-colors">Trading desk</Link></li>
                 <li><Link href="/ai" className="hover:text-indigo-400 transition-colors">AI lab</Link></li>
                 <li><Link href="/customers" className="hover:text-indigo-400 transition-colors">Customers</Link></li>
                 <li><Link href="/registrations" className="hover:text-indigo-400 transition-colors">Demo Registration</Link></li>

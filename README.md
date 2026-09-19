@@ -2,13 +2,13 @@
 ## Data AI Systems — trading desk and AI lab (2026-09-19)
 
 The site is served at https://data-ai-systems.com by the FastAPI stack's nginx
-(one origin: `/auth`, `/trading`, `/api`, `/CRUD` are proxied to the API, the
+(one origin: `/auth`, `/desk`, `/api`, `/CRUD` are proxied to the API, the
 rest to this app). `NEXT_PUBLIC_API_URL` is empty in production on purpose.
 
 - `/login` — email + password against `POST /auth/login`; tokens are kept in
   localStorage and refreshed through `/auth/refresh`.
-- `/trading` (roles `admin`, `trader`) — live positions with the exit ladder,
-  `/trading/history`, `/trading/board` (screener), `/trading/controls`
+- `/desk` (roles `admin`, `trader`) — live positions with the exit ladder,
+  `/desk/history`, `/desk/board` (screener), `/desk/controls`
   (kill switch, scheduler, tape read, two-step flatten — admin only).
 - `/ai` (role `admin`) — ask the trading book (guarded read-only SQL agent on
   Gemini), analyze a CSV/PDF upload, direct prompt.

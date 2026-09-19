@@ -7,7 +7,7 @@ import { useAuth } from '@/components/AuthProvider';
 export default function LoginPage() {
   const { user, loading, login } = useAuth();
   const router = useRouter();
-  const next = typeof router.query.next === 'string' ? router.query.next : '/trading';
+  const next = typeof router.query.next === 'string' ? router.query.next : '/desk';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);

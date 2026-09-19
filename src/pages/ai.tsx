@@ -103,9 +103,11 @@ function Lab() {
 
 export default function AIPage() {
   return (
-    <RequireAuth roles={['admin']}>
+    <>
       <Head><title>AI lab — Data AI Systems</title></Head>
+    <RequireAuth roles={['admin']}>
       <Lab />
     </RequireAuth>
+    </>
   );
 }

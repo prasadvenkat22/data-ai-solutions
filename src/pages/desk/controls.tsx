@@ -128,9 +128,11 @@ function Controls() {
 
 export default function ControlsPage() {
   return (
-    <RequireAuth roles={['admin', 'trader']}>
+    <>
       <Head><title>Engine controls — Data AI Systems</title></Head>
+    <RequireAuth roles={['admin', 'trader']}>
       <Controls />
     </RequireAuth>
+    </>
   );
 }

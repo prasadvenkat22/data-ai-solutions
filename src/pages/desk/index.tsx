@@ -290,9 +290,9 @@ function Dashboard() {
       )}
 
       <div className="mt-8 flex flex-wrap gap-3 text-sm">
-        <Link href="/trading/history" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Closed trades</Link>
-        <Link href="/trading/board" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Screener board</Link>
-        <Link href="/trading/controls" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Controls</Link>
+        <Link href="/desk/history" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Closed trades</Link>
+        <Link href="/desk/board" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Screener board</Link>
+        <Link href="/desk/controls" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Controls</Link>
         <Link href="/ai" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Ask the book (AI)</Link>
       </div>
     </div>
@@ -301,9 +301,11 @@ function Dashboard() {
 
 export default function TradingPage() {
   return (
-    <RequireAuth roles={['admin', 'trader']}>
+    <>
       <Head><title>Trading desk — Data AI Systems</title></Head>
+    <RequireAuth roles={['admin', 'trader']}>
       <Dashboard />
     </RequireAuth>
+    </>
   );
 }

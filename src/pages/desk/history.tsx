@@ -136,9 +136,11 @@ function HistoryView() {
 
 export default function HistoryPage() {
   return (
-    <RequireAuth roles={['admin', 'trader']}>
+    <>
       <Head><title>Closed trades — Data AI Systems</title></Head>
+    <RequireAuth roles={['admin', 'trader']}>
       <HistoryView />
     </RequireAuth>
+    </>
   );
 }

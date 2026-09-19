@@ -195,7 +195,7 @@ export default function HomePage() {
                 ))}
               </ul>
               <div className="flex gap-3 mt-8">
-                <Link href="/trading" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-500 hover:to-teal-500 transition-all">
+                <Link href="/desk" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl hover:from-emerald-500 hover:to-teal-500 transition-all">
                   Open the trading desk <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link href="/ai" className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 text-slate-200 font-semibold rounded-xl border border-slate-700 hover:bg-slate-700">

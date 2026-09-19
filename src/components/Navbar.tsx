@@ -71,13 +71,13 @@ const navLinks = [
   },
   {
     label: 'Trading',
-    href: '/trading',
+    href: '/desk',
     icon: CandlestickChart,
     children: [
-      { label: 'Positions', href: '/trading' },
-      { label: 'Closed trades', href: '/trading/history' },
-      { label: 'Screener board', href: '/trading/board' },
-      { label: 'Engine controls', href: '/trading/controls' },
+      { label: 'Positions', href: '/desk' },
+      { label: 'Closed trades', href: '/desk/history' },
+      { label: 'Screener board', href: '/desk/board' },
+      { label: 'Engine controls', href: '/desk/controls' },
     ],
   },
   { label: 'AI Lab', href: '/ai', icon: Bot },
