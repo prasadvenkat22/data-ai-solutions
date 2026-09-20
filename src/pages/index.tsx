@@ -169,8 +169,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Auto-Trader */}
-      <section className="bg-slate-950 border-y border-slate-800">
+      {/* Auto-Trader -- the navbar's public "Auto-Trader" entry lands here; scroll-mt clears the fixed bar */}
+      <section id="auto-trader" className="bg-slate-950 border-y border-slate-800 scroll-mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from './AuthProvider';
-import { LogIn, LogOut, CandlestickChart, Bot, Mail } from 'lucide-react';
+import { LogIn, LogOut, CandlestickChart, Bot, Mail, TrendingUp } from 'lucide-react';
 
 // `roles` gates a whole menu: a visitor sees Home, Consulting and Contact;
 // a trader adds Trading; an admin sees everything. The API enforces the same
@@ -50,6 +50,10 @@ const navLinks: NavLink[] = [
       { label: 'Service Catalog', href: '/services#catalog' },
     ],
   },
+  // Public: the featured product, on the home page. The signed-in desk is
+  // the 'Trading desk' menu below; visitors should still be able to find
+  // what the product is from the top bar.
+  { label: 'Auto-Trader', href: '/#auto-trader', icon: TrendingUp },
   { label: 'Contact', href: '/contact', icon: Mail },
   {
     label: 'Data',
@@ -87,7 +91,7 @@ const navLinks: NavLink[] = [
     ],
   },
   {
-    label: 'Trading',
+    label: 'Trading desk',
     href: '/desk',
     icon: CandlestickChart,
     roles: ['admin', 'trader'],
@@ -108,8 +112,12 @@ export default function Navbar() {
   const { user, logout, hasRole } = useAuth();
   const links = navLinks.filter((l) => !l.roles || hasRole(...l.roles));
 
-  const isActive = (href: string) =>
-    href === '/' ? router.pathname === '/' : router.pathname.startsWith(href.split('#')[0]);
+  const isActive = (href: string) => {
+    const base = href.split('#')[0];
+    // '/#section' links never highlight; only the bare Home entry owns '/'.
+    if (base === '/') return href === '/' && router.pathname === '/';
+    return router.pathname.startsWith(base);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50 shadow-lg">
