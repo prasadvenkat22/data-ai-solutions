@@ -57,7 +57,7 @@ const navLinks: NavLink[] = [
   { label: 'Contact', href: '/contact', icon: Mail },
   // Product updates: a mailing list, not an account. Sign-in stays for
   // investors' accounts, which an admin creates.
-  { label: 'Get updates', href: '/contact#updates', icon: BellIcon },
+  { label: 'Get updates', href: '/updates', icon: BellIcon },
   {
     label: 'Data',
     href: '/customers',

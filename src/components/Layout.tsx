@@ -61,6 +61,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <li><Link href="/ai" className="hover:text-indigo-400 transition-colors">AI lab</Link></li>
                 <li><Link href="/login" className="hover:text-indigo-400 transition-colors">Sign in</Link></li>
                 <li><Link href="/contact" className="hover:text-indigo-400 transition-colors">Book a demo</Link></li>
+                <li><Link href="/updates" className="hover:text-indigo-400 transition-colors">Get updates</Link></li>
               </ul>
             </div>
 
