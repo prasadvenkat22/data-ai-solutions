@@ -90,7 +90,7 @@ const technologies = [
 
 const whyUs = [
   { icon: Globe2, title: 'Global Presence', desc: 'On-shore & off-shore teams across multiple time zones for continuous delivery.' },
-  { icon: Zap, title: 'Rapid Deployment', desc: 'Proven accelerators and frameworks to go from concept to production fast.' },
+  { icon: Zap, title: 'AI Accelerators', desc: 'Proven templates for RAG, agents and data platforms — the same ones behind our auto-trader — to go from concept to production fast.' },
   { icon: TrendingUp, title: 'ROI Focused', desc: 'Every engagement is tied to measurable business outcomes and value creation.' },
   { icon: Sparkles, title: 'AI-First Mindset', desc: 'We embed AI capabilities into every solution, not as an afterthought.' },
 ];
@@ -180,9 +180,10 @@ export default function HomePage() {
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">The FinAI Options Auto-Trader</h2>
               <p className="text-slate-300 text-lg leading-relaxed mb-4">
-                We don&apos;t just advise — we build. This is our own flagship product, running on the same
-                agentic AI stack we deliver to clients, and a live example of the end-to-end system: data
-                feeds, models, agents and controls, in production every trading day.
+                We don&apos;t just advise — we build. Our flagship product is an autonomous quantitative
+                trading system that continuously ingests real-time market data to discover optimal spreads,
+                running on the same agentic AI stack we deliver to clients. It is a live example of the
+                end-to-end system: data feeds, models, agents and controls, in production every trading day.
               </p>
               <p className="text-slate-400 text-lg leading-relaxed mb-6">
                 Two books run on their own every trading day: a same-day book that rotates single-name debit
@@ -192,10 +193,10 @@ export default function HomePage() {
               </p>
               <ul className="space-y-3 text-slate-300 text-sm">
                 {[
-                  ['Expected value first', 'Every strike pair is priced by Pwin against the win rate the market demands; only positive edge is considered.'],
-                  ['Three vetoes', 'An objective macro read, a per-name news grade from sixteen wires and filings, and the tape itself — price against VWAP, volume, and the option chain.'],
-                  ['Exits that scale', 'Stops, stalls and targets tuned on two hundred settled trades for same-day spreads, and a ladder that tightens by sessions left for weeklies.'],
-                  ['An agent that reads its book', 'Ask in plain English; a guarded read-only SQL agent answers from the live database and shows the query.'],
+                  ['Mathematical optimization', 'Ranks multi-leg options spreads by expected value — every strike pair priced by Pwin against the win rate the market demands; only positive edge is considered.'],
+                  ['Intelligent execution', 'Gates entries on live financial news sentiment and tape momentum: an objective macro read, a per-name news grade from sixteen wires and filings, and price against VWAP, volume and the option chain.'],
+                  ['Exits that scale', 'Mathematically manages every exit — stops, stalls and targets tuned on two hundred settled trades for same-day spreads, and a ladder that tightens by sessions left for weeklies.'],
+                  ['Agentic context bridge', 'An integrated conversational AI agent answers complex questions directly about its own trading book — a guarded read-only SQL agent on the live database that shows its query.'],
                 ].map(([t, d]) => (
                   <li key={t} className="flex gap-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
