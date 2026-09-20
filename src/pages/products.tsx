@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import RequireAuth from '@/components/RequireAuth';
 import { useEffect, useState, useRef } from 'react';
 import {
   Package, Plus, Pencil, Trash2, X, Loader2, CheckCircle2, AlertCircle, Search,
@@ -17,7 +18,7 @@ const emptyForm: ProductCreate = {
   is_active: true,
 };
 
-export default function ProductsPage() {
+function ProductsPageInner() {
   const [products, setProducts] = useState<ProductResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -120,7 +121,6 @@ export default function ProductsPage() {
 
   return (
     <>
-      <Head><title>Products — DataAI Solutions</title></Head>
 
       <section className="bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -357,5 +357,18 @@ function ProductImage({ id, name }: { id: number; name: string }) {
       className="w-full h-36 object-cover"
       onError={() => setHasImage(false)}
     />
+  );
+}
+
+// Admin only. The API already refuses everyone else (every /CRUD route needs
+// the admin role); this keeps a regular user from landing on a page of 403s.
+export default function ProductsPage() {
+  return (
+    <>
+      <Head><title>Products — Data AI Systems</title></Head>
+      <RequireAuth roles={['admin']}>
+        <ProductsPageInner />
+      </RequireAuth>
+    </>
   );
 }

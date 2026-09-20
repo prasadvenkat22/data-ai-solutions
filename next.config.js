@@ -15,6 +15,7 @@ const nextConfig = {
       { source: '/auth/:path*',        destination: `${backend}/auth/:path*` },
       { source: '/trading/:path*',     destination: `${backend}/trading/:path*` },
       { source: '/api/genai/:path*',   destination: `${backend}/api/genai/:path*` },
+      { source: '/api/contact/:path*', destination: `${backend}/api/contact/:path*` },
     ];
   },
 };

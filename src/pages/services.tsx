@@ -5,6 +5,7 @@ import {
   Plus, X, Loader2, CheckCircle2, AlertCircle, Trash2, ImageIcon, Upload,
 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useAuth } from '@/components/AuthProvider';
 
 const serviceCategories = [
   {
@@ -106,6 +107,11 @@ const serviceCategories = [
 ];
 
 export default function ServicesPage() {
+  // The catalog below is a CRUD surface (add / delete against /CRUD/services,
+  // admin-only at the API). Visitors and regular users get the consulting
+  // page without it, rather than an empty list with an Add button that 403s.
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole('admin');
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -125,8 +131,9 @@ export default function ServicesPage() {
   });
 
   useEffect(() => {
+    if (!isAdmin) { setLoading(false); return; }
     api.services.list().then(setServices).catch(() => setServices([])).finally(() => setLoading(false));
-  }, []);
+  }, [isAdmin]);
 
   const openAdd = () => {
     setForm({ name: '', description: '', DBName: 'postgres', createdate: '', imageUrl: '' });
@@ -226,57 +233,59 @@ export default function ServicesPage() {
         ))}
       </div>
 
-      {/* DB Services from API */}
-      <section className="bg-slate-900/40 border-t border-slate-800 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div id="catalog" className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Service Catalog</h2>
-              <p className="text-slate-400 text-sm mt-1">Managed service offerings from our platform</p>
+      {/* DB Services from API -- admin only */}
+      {isAdmin && (
+        <section className="bg-slate-900/40 border-t border-slate-800 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div id="catalog" className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Service Catalog</h2>
+                <p className="text-slate-400 text-sm mt-1">Managed service offerings from our platform</p>
+              </div>
+              <button
+                onClick={openAdd}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-colors text-sm font-semibold"
+              >
+                <Plus className="w-4 h-4" /> Add Service
+              </button>
             </div>
-            <button
-              onClick={openAdd}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-colors text-sm font-semibold"
-            >
-              <Plus className="w-4 h-4" /> Add Service
-            </button>
+
+            {success && (
+              <div className="flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/50 rounded-xl px-4 py-3 mb-6 text-emerald-300 text-sm">
+                <CheckCircle2 className="w-4 h-4" /> {success}
+              </div>
+            )}
+
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+              </div>
+            ) : services.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">No services found in the catalog.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {services.map((svc: any, i: number) => (
+                  <div key={svc.id ?? i} className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 relative group">
+                    <button
+                      onClick={() => setDeleteId(svc.id)}
+                      className="absolute top-3 right-3 p-1.5 text-slate-600 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <h3 className="text-white font-semibold mb-1">{svc.name}</h3>
+                    <p className="text-slate-400 text-sm">{svc.description}</p>
+                    {svc.DBName && (
+                      <span className="inline-block mt-3 text-xs bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 rounded-full px-2.5 py-1">
+                        {svc.DBName}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-
-          {success && (
-            <div className="flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/50 rounded-xl px-4 py-3 mb-6 text-emerald-300 text-sm">
-              <CheckCircle2 className="w-4 h-4" /> {success}
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
-            </div>
-          ) : services.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">No services found in the catalog.</div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {services.map((svc: any, i: number) => (
-                <div key={svc.id ?? i} className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-5 relative group">
-                  <button
-                    onClick={() => setDeleteId(svc.id)}
-                    className="absolute top-3 right-3 p-1.5 text-slate-600 hover:text-red-400 hover:bg-red-900/30 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  <h3 className="text-white font-semibold mb-1">{svc.name}</h3>
-                  <p className="text-slate-400 text-sm">{svc.description}</p>
-                  {svc.DBName && (
-                    <span className="inline-block mt-3 text-xs bg-indigo-900/50 text-indigo-300 border border-indigo-700/50 rounded-full px-2.5 py-1">
-                      {svc.DBName}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Add Service Modal */}
       {showForm && (

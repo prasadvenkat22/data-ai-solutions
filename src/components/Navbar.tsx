@@ -21,9 +21,22 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from './AuthProvider';
-import { LogIn, LogOut, CandlestickChart, Bot } from 'lucide-react';
+import { LogIn, LogOut, CandlestickChart, Bot, Mail } from 'lucide-react';
 
-const navLinks = [
+// `roles` gates a whole menu: a visitor sees Home, Consulting and Contact;
+// a trader adds Trading; an admin sees everything. The API enforces the same
+// split (CRUD and AI are admin-only, /trading is admin or trader), so this is
+// about not showing a regular user a menu of pages that would 403 -- the
+// operator's "adding products and services should be disabled" for them.
+type NavLink = {
+  label: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+  roles?: string[];
+  children?: { label: string; href: string }[];
+};
+
+const navLinks: NavLink[] = [
   { label: 'Home', href: '/', icon: LayoutDashboard },
   {
     label: 'Consulting',
@@ -37,10 +50,12 @@ const navLinks = [
       { label: 'Service Catalog', href: '/services#catalog' },
     ],
   },
+  { label: 'Contact', href: '/contact', icon: Mail },
   {
     label: 'Data',
     href: '/customers',
     icon: Layers,
+    roles: ['admin'],
     children: [
       { label: 'Customers', href: '/customers' },
       { label: 'Users', href: '/users' },
@@ -54,6 +69,7 @@ const navLinks = [
     label: 'Operations',
     href: '/service-requests',
     icon: Wrench,
+    roles: ['admin'],
     children: [
       { label: 'Service Requests', href: '/service-requests' },
       { label: 'Transactions', href: '/transactions' },
@@ -64,6 +80,7 @@ const navLinks = [
     label: 'Config',
     href: '/roles',
     icon: Shield,
+    roles: ['admin'],
     children: [
       { label: 'Roles', href: '/roles' },
       { label: 'Demos', href: '/registrations' },
@@ -73,6 +90,7 @@ const navLinks = [
     label: 'Trading',
     href: '/desk',
     icon: CandlestickChart,
+    roles: ['admin', 'trader'],
     children: [
       { label: 'Positions', href: '/desk' },
       { label: 'Closed trades', href: '/desk/history' },
@@ -80,14 +98,15 @@ const navLinks = [
       { label: 'Engine controls', href: '/desk/controls' },
     ],
   },
-  { label: 'AI Lab', href: '/ai', icon: Bot },
+  { label: 'AI Lab', href: '/ai', icon: Bot, roles: ['admin'] },
 ];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, hasRole } = useAuth();
+  const links = navLinks.filter((l) => !l.roles || hasRole(...l.roles));
 
   const isActive = (href: string) =>
     href === '/' ? router.pathname === '/' : router.pathname.startsWith(href.split('#')[0]);
@@ -109,7 +128,7 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <div
                 key={link.href}
                 className="relative"
@@ -184,7 +203,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden bg-slate-900 border-t border-slate-800 px-4 py-3 space-y-1">
-          {navLinks.map((link) => (
+          {links.map((link) => (
             <div key={link.href}>
               <Link
                 href={link.href}

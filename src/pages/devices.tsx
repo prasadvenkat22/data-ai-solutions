@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import RequireAuth from '@/components/RequireAuth';
 import { useEffect, useState, useRef } from 'react';
 import {
   Cpu, Plus, Pencil, Trash2, X, Loader2, CheckCircle2, AlertCircle, Search, ImageIcon, Upload,
@@ -15,7 +16,7 @@ const emptyForm: DeviceCreate = {
   status: 'active',
 };
 
-export default function DevicesPage() {
+function DevicesPageInner() {
   const [devices, setDevices] = useState<DeviceResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -117,7 +118,6 @@ export default function DevicesPage() {
 
   return (
     <>
-      <Head><title>Devices — DataAI Solutions</title></Head>
 
       <section className="bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -337,5 +337,18 @@ function StatusBadge({ status }: { status: string }) {
     <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border ${colors[status] || colors.inactive}`}>
       {status}
     </span>
+  );
+}
+
+// Admin only. The API already refuses everyone else (every /CRUD route needs
+// the admin role); this keeps a regular user from landing on a page of 403s.
+export default function DevicesPage() {
+  return (
+    <>
+      <Head><title>Devices — Data AI Systems</title></Head>
+      <RequireAuth roles={['admin']}>
+        <DevicesPageInner />
+      </RequireAuth>
+    </>
   );
 }

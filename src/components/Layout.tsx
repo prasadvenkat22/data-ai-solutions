@@ -37,19 +37,19 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <a href="#" className="text-slate-500 hover:text-indigo-400 transition-colors">
                   <Twitter className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-slate-500 hover:text-indigo-400 transition-colors">
+                <Link href="/contact" className="text-slate-500 hover:text-indigo-400 transition-colors" aria-label="Contact">
                   <Mail className="w-5 h-5" />
-                </a>
+                </Link>
               </div>
             </div>
 
             <div>
               <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Services</h4>
               <ul className="space-y-2 text-sm text-slate-400">
-                <li><Link href="/services#cloud" className="hover:text-indigo-400 transition-colors">Cloud Platforms</Link></li>
-                <li><Link href="/services#ai" className="hover:text-indigo-400 transition-colors">AI & ML Solutions</Link></li>
-                <li><Link href="/services#analytics" className="hover:text-indigo-400 transition-colors">Data Analytics</Link></li>
-                <li><Link href="/services#custom" className="hover:text-indigo-400 transition-colors">Custom AI</Link></li>
+                <li><Link href="/services#cloud" className="hover:text-indigo-400 transition-colors">Cloud Migrations</Link></li>
+                <li><Link href="/services#ai" className="hover:text-indigo-400 transition-colors">Modern Data Platforms</Link></li>
+                <li><Link href="/services#analytics" className="hover:text-indigo-400 transition-colors">BI Solutions</Link></li>
+                <li><Link href="/services#custom" className="hover:text-indigo-400 transition-colors">Agentic AI</Link></li>
               </ul>
             </div>
 
@@ -58,8 +58,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               <ul className="space-y-2 text-sm text-slate-400">
                 <li><Link href="/desk" className="hover:text-indigo-400 transition-colors">Trading desk</Link></li>
                 <li><Link href="/ai" className="hover:text-indigo-400 transition-colors">AI lab</Link></li>
-                <li><Link href="/customers" className="hover:text-indigo-400 transition-colors">Customers</Link></li>
-                <li><Link href="/registrations" className="hover:text-indigo-400 transition-colors">Demo Registration</Link></li>
+                <li><Link href="/login" className="hover:text-indigo-400 transition-colors">Sign in</Link></li>
+                <li><Link href="/contact" className="hover:text-indigo-400 transition-colors">Book a demo</Link></li>
               </ul>
             </div>
 
@@ -76,7 +76,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           <div className="mt-10 pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-slate-500 text-sm">
-              © {new Date().getFullYear()} Data AI Systems · data-ai-systems.com. All rights reserved.
+              © {new Date().getFullYear()} Data AI Systems · dataaisys.com. All rights reserved.
             </p>
             <p className="text-slate-600 text-xs">
               Cloud · Databricks · Snowflake · Azure · AWS · GCP

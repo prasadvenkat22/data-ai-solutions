@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import RequireAuth from '@/components/RequireAuth';
 import { useEffect, useState, useRef } from 'react';
 import {
   Building2, Plus, Pencil, Trash2, X, Loader2,
@@ -17,7 +18,7 @@ const emptyForm: CustomerCreate = {
   tenant_id: '',
 };
 
-export default function CustomersPage() {
+function CustomersPageInner() {
   const [customers, setCustomers] = useState<CustomerResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -121,7 +122,6 @@ export default function CustomersPage() {
 
   return (
     <>
-      <Head><title>Customers — DataAI Solutions</title></Head>
 
       <section className="bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -352,5 +352,18 @@ function CustomerImage({ entity, id, name }: { entity: string; id: number; name:
       className="w-9 h-9 rounded-lg object-cover flex-shrink-0"
       onError={() => setHasImage(false)}
     />
+  );
+}
+
+// Admin only. The API already refuses everyone else (every /CRUD route needs
+// the admin role); this keeps a regular user from landing on a page of 403s.
+export default function CustomersPage() {
+  return (
+    <>
+      <Head><title>Customers — Data AI Systems</title></Head>
+      <RequireAuth roles={['admin']}>
+        <CustomersPageInner />
+      </RequireAuth>
+    </>
   );
 }

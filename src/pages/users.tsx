@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import RequireAuth from '@/components/RequireAuth';
 import { useEffect, useState } from 'react';
 import {
   Users, UserPlus, X, Loader2, CheckCircle2, AlertCircle, Search,
@@ -7,7 +8,7 @@ import {
 import { api } from '@/lib/api';
 import type { UserResponse } from '@/types';
 
-export default function UsersPage() {
+function UsersPageInner() {
   const [users, setUsers] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -60,7 +61,6 @@ export default function UsersPage() {
 
   return (
     <>
-      <Head><title>Users — DataAI Solutions</title></Head>
 
       <section className="bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -230,6 +230,19 @@ export default function UsersPage() {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+// Admin only. The API already refuses everyone else (every /CRUD route needs
+// the admin role); this keeps a regular user from landing on a page of 403s.
+export default function UsersPage() {
+  return (
+    <>
+      <Head><title>Users — Data AI Systems</title></Head>
+      <RequireAuth roles={['admin']}>
+        <UsersPageInner />
+      </RequireAuth>
     </>
   );
 }

@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import RequireAuth from '@/components/RequireAuth';
 import { useEffect, useState } from 'react';
 import {
   CalendarCheck, Plus, X, Loader2, CheckCircle2, AlertCircle,
@@ -32,7 +33,7 @@ const emptyForm: RegistrationBase = {
   notes: '',
 };
 
-export default function RegistrationsPage() {
+function RegistrationsPageInner() {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,7 +93,6 @@ export default function RegistrationsPage() {
 
   return (
     <>
-      <Head><title>Demo Registrations — DataAI Solutions</title></Head>
 
       {/* Hero */}
       <section className="bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800 py-12">
@@ -391,6 +391,19 @@ export default function RegistrationsPage() {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+// Admin only. The API already refuses everyone else (every /CRUD route needs
+// the admin role); this keeps a regular user from landing on a page of 403s.
+export default function RegistrationsPage() {
+  return (
+    <>
+      <Head><title>Demo Registrations — Data AI Systems</title></Head>
+      <RequireAuth roles={['admin']}>
+        <RegistrationsPageInner />
+      </RequireAuth>
     </>
   );
 }

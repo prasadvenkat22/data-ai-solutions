@@ -4,7 +4,7 @@
 #   docker compose -f docker-compose.server.yml up -d --build
 #
 # No published port: the site is reachable only through the fastapi stack's
-# nginx, which proxies data-ai-systems.com to this container by name over the
+# nginx, which proxies dataaisys.com to this container by name over the
 # shared `fastapi_default` network and sends /auth, /trading, /api, /CRUD to
 # the API container. NEXT_PUBLIC_API_URL is empty on purpose -- same origin.
 services:

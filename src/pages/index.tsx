@@ -14,58 +14,61 @@ import {
   TrendingUp,
   Users,
   Zap,
+  Layers,
+  Bot,
+  Wrench,
 } from 'lucide-react';
 
 const services = [
   {
-    icon: Cloud,
-    title: 'Cloud Platforms',
-    desc: 'End-to-end migration and architecture on AWS, Azure, and GCP. From lift-and-shift to cloud-native transformation.',
-    tags: ['AWS', 'Azure', 'GCP'],
-    color: 'from-sky-500/20 to-blue-600/20 border-sky-500/30',
-    iconColor: 'text-sky-400',
-    href: '/services#cloud',
-  },
-  {
-    icon: BrainCircuit,
-    title: 'AI & ML Solutions',
-    desc: 'Custom AI implementations using Databricks, Snowflake, and leading LLM frameworks. Bring intelligence to your data.',
-    tags: ['Databricks', 'Snowflake', 'LLM'],
-    color: 'from-purple-500/20 to-violet-600/20 border-purple-500/30',
-    iconColor: 'text-purple-400',
-    href: '/services#ai',
-  },
-  {
-    icon: BarChart3,
-    title: 'Data Analytics',
-    desc: 'Transform raw data into business insights with modern data platforms, warehouses, and BI solutions.',
-    tags: ['BI', 'Data Warehouse', 'ETL'],
-    color: 'from-emerald-500/20 to-teal-600/20 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
-    href: '/services#analytics',
-  },
-  {
-    icon: Cpu,
-    title: 'Custom AI Implementations',
-    desc: 'Bespoke AI solutions tailored to your industry. RAG pipelines, vector search, and generative AI agents.',
-    tags: ['RAG', 'Vector DB', 'GenAI'],
-    color: 'from-orange-500/20 to-rose-600/20 border-orange-500/30',
-    iconColor: 'text-orange-400',
-    href: '/services#custom',
-  },
-  {
     icon: Server,
-    title: 'On-Premise to Cloud',
-    desc: 'Seamless migration of legacy analytical platforms to modern cloud-native architectures with zero data loss.',
+    title: 'Cloud Migrations',
+    desc: 'Seamless transitions from on-premise infrastructure to high-performance cloud environments — planned cutovers, validated data, no surprises.',
     tags: ['Migration', 'Hybrid', 'Modernization'],
     color: 'from-indigo-500/20 to-blue-600/20 border-indigo-500/30',
     iconColor: 'text-indigo-400',
     href: '/services#cloud',
   },
   {
-    icon: Shield,
-    title: 'Support & Incident Resolution',
-    desc: '24/7 on-shore and off-shore support teams ensuring uptime, compliance, and rapid incident resolution.',
+    icon: Layers,
+    title: 'Modern Data Platforms',
+    desc: 'Custom big-data architectures engineered natively on Databricks and Snowflake: lakehouse, governance, streaming and batch on one platform.',
+    tags: ['Databricks', 'Snowflake', 'Lakehouse'],
+    color: 'from-purple-500/20 to-violet-600/20 border-purple-500/30',
+    iconColor: 'text-purple-400',
+    href: '/services#ai',
+  },
+  {
+    icon: Cloud,
+    title: 'Multi-Cloud Integration',
+    desc: 'Production-grade deployments tailored for Azure, GCP and AWS — one architecture, the right cloud for each workload.',
+    tags: ['Azure', 'GCP', 'AWS'],
+    color: 'from-sky-500/20 to-blue-600/20 border-sky-500/30',
+    iconColor: 'text-sky-400',
+    href: '/services#cloud',
+  },
+  {
+    icon: Bot,
+    title: 'Agentic AI Solutions',
+    desc: 'AI agents that act on your cloud platforms: retrieval over your documents, tool use, guarded SQL against live data, and workflows that run unattended.',
+    tags: ['Agents', 'RAG', 'LLM'],
+    color: 'from-orange-500/20 to-rose-600/20 border-orange-500/30',
+    iconColor: 'text-orange-400',
+    href: '/services#custom',
+  },
+  {
+    icon: BarChart3,
+    title: 'BI Solutions',
+    desc: 'Dashboards and semantic layers people actually use, on top of a warehouse that stays correct as the business changes.',
+    tags: ['Dashboards', 'Semantic layer', 'Self-serve'],
+    color: 'from-emerald-500/20 to-teal-600/20 border-emerald-500/30',
+    iconColor: 'text-emerald-400',
+    href: '/services#analytics',
+  },
+  {
+    icon: Wrench,
+    title: 'Maintenance & Support',
+    desc: 'Run what we build, or what you already have: 24/7 on-shore and off-shore support, upgrades, cost control and incident resolution.',
     tags: ['24/7', 'On-shore', 'Off-shore'],
     color: 'from-rose-500/20 to-pink-600/20 border-rose-500/30',
     iconColor: 'text-rose-400',
@@ -82,7 +85,7 @@ const stats = [
 
 const technologies = [
   'Databricks', 'Snowflake', 'Azure', 'AWS', 'GCP',
-  'Apache Spark', 'dbt', 'Airflow', 'Kafka', 'OpenAI',
+  'Apache Spark', 'dbt', 'Airflow', 'Kafka', 'Gemini', 'Claude',
 ];
 
 const whyUs = [
@@ -139,15 +142,16 @@ export default function HomePage() {
               Bringing AI to where data lives.
             </p>
             <p className="text-lg text-slate-400 leading-relaxed mb-8 max-w-2xl">
-              Consulting for data analytics and AI — new implementations, on-premise to cloud migrations,
-              and custom AI on Databricks, Snowflake, Azure, AWS and GCP. And a working example of our own:
-              a live options auto-trader that ranks spreads by expected value, gates entries on news and the
-              tape, manages every exit, and answers questions about its own book through an AI agent.
+              Cloud migrations, modern data platforms on Databricks and Snowflake, multi-cloud on Azure,
+              GCP and AWS, agentic AI and BI — and the maintenance and support to keep it running. And a
+              working example of our own: a live options auto-trader that ranks spreads by expected value,
+              gates entries on news and the tape, manages every exit, and answers questions about its own
+              book through an AI agent.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="/registrations#book"
+                href="/contact"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-105"
               >
                 <CalendarIcon className="w-5 h-5" />
@@ -172,9 +176,14 @@ export default function HomePage() {
             <div>
               <div className="inline-flex items-center gap-2 bg-emerald-900/40 border border-emerald-700/50 rounded-full px-4 py-1.5 mb-6">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-300 text-sm font-medium">Live system · real account</span>
+                <span className="text-emerald-300 text-sm font-medium">Featured production system · live account</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">The Options Auto-Trader</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">The FinAI Options Auto-Trader</h2>
+              <p className="text-slate-300 text-lg leading-relaxed mb-4">
+                We don&apos;t just advise — we build. This is our own flagship product, running on the same
+                agentic AI stack we deliver to clients, and a live example of the end-to-end system: data
+                feeds, models, agents and controls, in production every trading day.
+              </p>
               <p className="text-slate-400 text-lg leading-relaxed mb-6">
                 Two books run on their own every trading day: a same-day book that rotates single-name debit
                 spreads from the open, and a weekly book that buys into Friday. Every candidate has to clear the
@@ -243,9 +252,9 @@ export default function HomePage() {
       {/* Services Cards */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Our Consulting Services</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Core Consulting Expertise</h2>
           <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            Comprehensive data and AI consulting across the entire technology stack.
+            From the first migration to the agent that runs on top of it — and the support after go-live.
           </p>
         </div>
 
@@ -285,7 +294,7 @@ export default function HomePage() {
       <section className="bg-slate-900/40 border-y border-slate-800 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why DataAI Solutions</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Why Data AI Systems</h2>
             <p className="text-slate-400 text-lg">
               Trusted by enterprises across industries for mission-critical data transformations.
             </p>
@@ -337,17 +346,17 @@ export default function HomePage() {
           </p>
           <div className="relative flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/registrations#book"
+              href="/contact"
               className="inline-flex items-center gap-2 px-8 py-4 bg-white text-indigo-900 font-bold rounded-xl hover:bg-indigo-50 transition-all shadow-lg"
             >
               <CalendarIcon className="w-5 h-5" />
               Schedule a Demo
             </Link>
             <Link
-              href="/customers"
+              href="/services"
               className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-800/60 text-white font-semibold rounded-xl hover:bg-indigo-800 border border-indigo-600/50 transition-all"
             >
-              View Our Clients
+              Explore Services
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>

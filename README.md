@@ -1,7 +1,7 @@
 
 ## Data AI Systems — trading desk and AI lab (2026-09-19)
 
-The site is served at https://data-ai-systems.com by the FastAPI stack's nginx
+The site is served at https://dataaisys.com by the FastAPI stack's nginx
 (one origin: `/auth`, `/desk`, `/api`, `/CRUD` are proxied to the API, the
 rest to this app). `NEXT_PUBLIC_API_URL` is empty in production on purpose.
 
