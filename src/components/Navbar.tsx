@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from './AuthProvider';
-import { LogIn, LogOut, CandlestickChart, Bot, Mail, TrendingUp } from 'lucide-react';
+import { LogIn, LogOut, CandlestickChart, Bot, Mail, TrendingUp, Bell as BellIcon } from 'lucide-react';
 
 // `roles` gates a whole menu: a visitor sees Home, Consulting and Contact;
 // a trader adds Trading; an admin sees everything. The API enforces the same
@@ -55,6 +55,9 @@ const navLinks: NavLink[] = [
   // what the product is from the top bar.
   { label: 'Auto-Trader', href: '/#auto-trader', icon: TrendingUp },
   { label: 'Contact', href: '/contact', icon: Mail },
+  // Product updates: a mailing list, not an account. Sign-in stays for
+  // investors' accounts, which an admin creates.
+  { label: 'Get updates', href: '/contact#updates', icon: BellIcon },
   {
     label: 'Data',
     href: '/customers',
@@ -67,6 +70,7 @@ const navLinks: NavLink[] = [
       { label: 'Products', href: '/products' },
       { label: 'Services', href: '/services#catalog' },
       { label: 'Registrations', href: '/registrations' },
+      { label: 'Updates subscribers', href: '/subscribers' },
     ],
   },
   {

@@ -1,5 +1,7 @@
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import { FormEvent, useState } from 'react';
+import SubscribeForm from '@/components/SubscribeForm';
 import { AlertCircle, Building2, CalendarCheck, CheckCircle2, Loader2, Mail, MessageSquare, Phone, Send, User } from 'lucide-react';
 
 /**
@@ -48,7 +50,18 @@ const empty: Form = {
 
 const field = 'w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-100 outline-none focus:border-indigo-500';
 
+// Banners for the confirm / unsubscribe links, which land here via
+// /api/contact/confirm and /api/contact/unsubscribe (303 to /contact?updates=...).
+const UPDATE_BANNERS: Record<string, { tone: string; text: string }> = {
+  confirmed: { tone: 'emerald', text: 'You are on the list. Thank you — updates will come from services@dataaisys.com.' },
+  unsubscribed: { tone: 'slate', text: 'You have been unsubscribed. Nothing more will be sent to that address.' },
+  expired: { tone: 'amber', text: 'That confirmation link has expired. Sign up again below and we will send a fresh one.' },
+  invalid: { tone: 'amber', text: 'That link is not valid. If you meant to sign up for updates, use the form below.' },
+};
+
 export default function ContactPage() {
+  const router = useRouter();
+  const banner = typeof router.query.updates === 'string' ? UPDATE_BANNERS[router.query.updates] : undefined;
   const [form, setForm] = useState<Form>(empty);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +110,17 @@ export default function ContactPage() {
           </p>
         </div>
       </section>
+
+      {banner && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className={`border rounded-xl px-4 py-3 text-sm ${
+            banner.tone === 'emerald' ? 'bg-emerald-900/30 border-emerald-700/50 text-emerald-200'
+            : banner.tone === 'amber' ? 'bg-amber-900/30 border-amber-700/50 text-amber-200'
+            : 'bg-slate-800/60 border-slate-700 text-slate-300'}`}>
+            {banner.text}
+          </div>
+        </div>
+      )}
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2">
@@ -204,6 +228,15 @@ export default function ContactPage() {
         </div>
 
         <aside className="space-y-6">
+          <div id="updates" className="bg-slate-900 border border-indigo-800/50 rounded-2xl p-6 scroll-mt-20 relative">
+            <h3 className="text-white font-semibold mb-1">Just want updates?</h3>
+            <p className="text-slate-400 text-sm mb-4">
+              Occasional news on the FinAI Options Auto-Trader and our data and AI work. This is a mailing
+              list, not an account: no password, nothing to sign in to. Desk access is for investors and is
+              set up by us — ask through the form.
+            </p>
+            <SubscribeForm source="contact" />
+          </div>
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
             <h3 className="text-white font-semibold mb-3">What a demo covers</h3>
             <ul className="space-y-2 text-sm text-slate-400">

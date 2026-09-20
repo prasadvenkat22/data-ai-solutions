@@ -95,6 +95,11 @@ export const api = {
     create: (data: any) => apiPost<any>('/CRUD/roles/', data),
     delete: (id: number) => apiDelete(`/CRUD/roles/${id}`),
   },
+  subscribers: {
+    // The product-updates list (admin). Sign-up itself is public and lives in
+    // components/SubscribeForm.tsx with no bearer.
+    list: () => apiGet<any[]>('/api/contact/subscribers'),
+  },
   registrations: {
     list: () => apiGet<any[]>('/CRUD/registrations/'),
     create: (data: any) => apiPost<any>('/CRUD/registrations/', data),

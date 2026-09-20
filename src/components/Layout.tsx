@@ -4,6 +4,7 @@ import AIChatWidget from './AIChatWidget';
 import { Database, Linkedin, Twitter, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from './AuthProvider';
+import SubscribeForm from './SubscribeForm';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { hasRole } = useAuth();
@@ -72,6 +73,18 @@ export default function Layout({ children }: { children: ReactNode }) {
                 <li>24/7 Incident Support</li>
               </ul>
             </div>
+          </div>
+
+          {/* Product updates: a list, not an account. See SubscribeForm. */}
+          <div className="mt-10 pt-8 border-t border-slate-800 grid md:grid-cols-2 gap-6 items-center">
+            <div>
+              <h4 className="text-white font-semibold text-sm uppercase tracking-wider">Get product updates</h4>
+              <p className="text-slate-400 text-sm mt-1">
+                News on the FinAI Options Auto-Trader and our data and AI work. No account, no password —
+                you confirm by email and can leave in one click.
+              </p>
+            </div>
+            <div className="relative"><SubscribeForm source="footer" compact /></div>
           </div>
 
           <div className="mt-10 pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
