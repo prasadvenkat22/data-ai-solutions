@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/router';
+import { FormEvent, useEffect, useState } from 'react';
 import { ArrowLeft, KeyRound, Loader2, Mail, MailCheck } from 'lucide-react';
 import { forgotPassword } from '@/lib/auth';
 
@@ -11,10 +12,18 @@ import { forgotPassword } from '@/lib/auth';
  * /reset-password?token=... on this site.
  */
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // /account links here with ?email=... so a signed-in user does not retype it.
+  useEffect(() => {
+    if (router.isReady && typeof router.query.email === 'string' && !email) {
+      setEmail(router.query.email);
+    }
+  }, [router.isReady, router.query.email, email]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();

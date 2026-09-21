@@ -1,4 +1,6 @@
 import Head from 'next/head';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { FormEvent, useState } from 'react';
 import { CheckCircle2, KeyRound, Loader2, Lock, Mail, Shield, UserCircle2 } from 'lucide-react';
 import RequireAuth from '@/components/RequireAuth';
@@ -14,6 +16,7 @@ import { MIN_PASSWORD_LENGTH, changePassword } from '@/lib/auth';
  */
 function AccountInner() {
   const { user } = useAuth();
+  const router = useRouter();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -42,6 +45,20 @@ function AccountInner() {
       setBusy(false);
     }
   };
+
+  // Back to wherever they came from; home if this tab opened straight here.
+  const cancel = () => {
+    setCurrent('');
+    setNext('');
+    setConfirm('');
+    setError(null);
+    if (window.history.length > 1) router.back();
+    else void router.push('/');
+  };
+
+  // Works while signed in: the reset link sets a new password without asking
+  // for the old one, and this session's tokens stay valid until they expire.
+  const forgotHref = `/forgot-password?email=${encodeURIComponent(user?.email ?? '')}`;
 
   const field = (
     label: string,
@@ -112,20 +129,34 @@ function AccountInner() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={busy}
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-60"
-            >
-              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
-              Change password
-            </button>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
+              <button
+                type="submit"
+                disabled={busy}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-60"
+              >
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+                Change password
+              </button>
+              <button
+                type="button"
+                onClick={cancel}
+                disabled={busy}
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg font-medium text-slate-300 border border-slate-700 hover:bg-slate-800 disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <Link href={forgotHref} className="text-sm text-indigo-300 hover:text-indigo-200 sm:ml-auto">
+                Forgot your current password?
+              </Link>
+            </div>
           </form>
         </div>
 
         <p className="text-xs text-slate-500 mt-6 flex items-start gap-2">
           <UserCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          Forgotten the current one? Sign out and use “Forgot password?” on the sign-in page to set a new one by email.
+          “Forgot your current password?” emails you a reset link. It sets a new password without asking for
+          the old one, and you stay signed in here.
         </p>
       </div>
     </>
