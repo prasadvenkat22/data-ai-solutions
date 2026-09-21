@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from './AuthProvider';
-import { LogIn, LogOut, CandlestickChart, Bot, Mail, TrendingUp, Bell as BellIcon } from 'lucide-react';
+import { LogIn, LogOut, CandlestickChart, Bot, Mail, TrendingUp, Bell as BellIcon, UserCircle2 } from 'lucide-react';
 
 // `roles` gates a whole menu: a visitor sees Home, Consulting and Contact;
 // a trader adds Trading; an admin sees everything. The API enforces the same
@@ -184,7 +184,18 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             {user ? (
               <>
-                <span className="text-xs text-slate-400 px-2">{user.email}{user.role ? ` · ${user.role}` : ''}</span>
+                {/* The email is the way to /account (change password). */}
+                <Link
+                  href="/account"
+                  title="Your account"
+                  className={clsx(
+                    'inline-flex items-center gap-1.5 px-2 py-2 text-xs rounded-lg hover:bg-slate-800',
+                    router.pathname === '/account' ? 'text-white' : 'text-slate-400 hover:text-white'
+                  )}
+                >
+                  <UserCircle2 className="w-4 h-4" />
+                  {user.email}{user.role ? ` · ${user.role}` : ''}
+                </Link>
                 <button
                   onClick={() => { logout(); void router.push('/'); }}
                   className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800"
@@ -246,14 +257,23 @@ export default function Navbar() {
               )}
             </div>
           ))}
-          <div className="pt-2 border-t border-slate-800">
+          <div className="pt-2 border-t border-slate-800 space-y-1">
             {user ? (
-              <button
-                onClick={() => { setMobileOpen(false); logout(); void router.push('/'); }}
-                className="block w-full text-center px-4 py-2.5 text-sm font-semibold bg-slate-800 text-white rounded-lg"
-              >
-                Sign out ({user.email})
-              </button>
+              <>
+                <Link
+                  href="/account"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800"
+                >
+                  <UserCircle2 className="w-4 h-4" /> Your account
+                </Link>
+                <button
+                  onClick={() => { setMobileOpen(false); logout(); void router.push('/'); }}
+                  className="block w-full text-center px-4 py-2.5 text-sm font-semibold bg-slate-800 text-white rounded-lg"
+                >
+                  Sign out ({user.email})
+                </button>
+              </>
             ) : (
               <Link
                 href="/login"

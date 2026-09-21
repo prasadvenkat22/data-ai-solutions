@@ -6,7 +6,17 @@ The site is served at https://dataaisys.com by the FastAPI stack's nginx
 rest to this app). `NEXT_PUBLIC_API_URL` is empty in production on purpose.
 
 - `/login` — email + password against `POST /auth/login`; tokens are kept in
-  localStorage and refreshed through `/auth/refresh`.
+  localStorage and refreshed through `/auth/refresh`. Sign out clears them.
+- `/forgot-password` — emails a reset link (`POST /auth/forgot-password`; the
+  API answers the same whether or not the address has an account).
+  `/reset-password?token=…` is the page that link opens; the API builds the
+  link to land here (`PASSWORD_RESET_PAGE`, default `/reset-password`).
+- `/account` (any signed-in user) — change your own password
+  (`POST /auth/change-password`, current password required). Reached from the
+  email in the navbar.
+- `/users` (role `admin`) — also has a per-user Reset password button
+  (`POST /api/users/{id}/reset-password`) that issues a temporary password
+  shown once, for when the emailed link cannot work.
 - `/desk` (roles `admin`, `trader`) — live positions with the exit ladder,
   `/desk/history`, `/desk/board` (screener), `/desk/controls`
   (kill switch, scheduler, tape read, two-step flatten — admin only).

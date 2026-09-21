@@ -45,6 +45,14 @@ export const api = {
     get: (id: number) => apiGet<any>(`/CRUD/users/${id}`),
     register: (data: any) => apiPost<any>('/CRUD/register/', data),
     delete: (id: number) => apiDelete(`/CRUD/users/${id}`),
+    // Admin recovery for someone who cannot use the emailed reset link. The
+    // API generates the password and returns it exactly once; only the hash
+    // is stored. /api/users is the admin users router (not /CRUD/users).
+    resetPassword: (id: number) =>
+      apiPost<{ id: number; email: string; temporary_password: string; note: string }>(
+        `/api/users/${id}/reset-password`,
+        {}
+      ),
   },
   customers: {
     list: () => apiGet<any[]>('/CRUD/customers/'),

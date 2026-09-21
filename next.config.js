@@ -16,6 +16,7 @@ const nextConfig = {
       { source: '/trading/:path*',     destination: `${backend}/trading/:path*` },
       { source: '/api/genai/:path*',   destination: `${backend}/api/genai/:path*` },
       { source: '/api/contact/:path*', destination: `${backend}/api/contact/:path*` },  // inquiry, subscribe, confirm, unsubscribe, subscribers
+      { source: '/api/users/:path*',   destination: `${backend}/api/users/:path*` },    // admin user management (reset-password button on /users)
     ];
   },
 };

@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FormEvent, useEffect, useState } from 'react';
 import { Loader2, Lock, LogIn, Mail } from 'lucide-react';
@@ -95,9 +96,15 @@ export default function LoginPage() {
               </button>
             </form>
 
+            <div className="mt-4 text-right">
+              <Link href="/forgot-password" className="text-sm text-indigo-300 hover:text-indigo-200">
+                Forgot password?
+              </Link>
+            </div>
+
             <p className="text-xs text-slate-500 mt-6">
-              Sessions expire after inactivity. Passwords are set by an administrator; use “forgot password”
-              on the API if you are locked out.
+              Sessions expire after inactivity. Accounts are created by an administrator; if you have one
+              and no password yet, or have forgotten it, use “Forgot password?” to set a new one by email.
             </p>
           </div>
         </div>

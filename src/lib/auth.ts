@@ -128,3 +128,49 @@ export async function fetchMe(): Promise<Me | null> {
 export function logout(): void {
   clearTokens();
 }
+
+// ---------------------------------------------------------------------------
+// Passwords. The API owns the rules (helpers/pwd.py: at least 12 characters,
+// at most 72 bytes) and returns them as `detail`; MIN_PASSWORD_LENGTH here
+// only lets the form refuse the obvious case before a round trip.
+// ---------------------------------------------------------------------------
+
+export const MIN_PASSWORD_LENGTH = 12;
+
+/**
+ * POST /auth/forgot-password. The API answers 204 whether or not the address
+ * has an account, on purpose (it must not confirm which emails are
+ * registered), so the only failure this can report is not reaching it.
+ */
+export async function forgotPassword(email: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new Error(await detailOf(res, `Request failed (${res.status})`));
+}
+
+/** POST /auth/reset-password with the token from the emailed link. Works once. */
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, new_password: newPassword }),
+  });
+  if (!res.ok) throw new Error(await detailOf(res, `Reset failed (${res.status})`));
+}
+
+/**
+ * POST /auth/change-password for the signed-in user. A wrong current
+ * password is a 403 (not 401), so authFetch will not mistake it for an
+ * expired token and try to refresh.
+ */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const res = await authFetch('/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  });
+  if (!res.ok) throw new Error(await detailOf(res, `Change failed (${res.status})`));
+}
