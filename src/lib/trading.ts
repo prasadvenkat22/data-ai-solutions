@@ -131,6 +131,14 @@ export interface ScreenerRow {
   flow: string | null;
   flow_up_pct: number | null;
   flow_conflict: string | null;
+  // The week's VWAP (anchored to Monday's open), one read per underlying:
+  // which way the week's volume leans, so the board says what to long or short.
+  week_vwap: number | null;
+  week_vwap_side: 'ABOVE' | 'AT' | 'BELOW' | null;
+  week_vwap_slope_pct: number | null;
+  week_vwap_sessions: number | null;
+  week_vwap_trend: 'LONG' | 'SHORT' | 'MIXED' | null;
+  week_vwap_conflict: string | null;
 }
 
 export interface ScreenerResponse {

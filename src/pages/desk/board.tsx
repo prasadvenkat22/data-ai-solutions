@@ -22,7 +22,7 @@ function RowsTable({ res }: { res: ScreenerResponse }) {
           <tr>
             <th className="text-left px-3 py-2">Spread</th><th className="text-right px-3 py-2">Cost</th><th className="text-right px-3 py-2">Width</th>
             <th className="text-right px-3 py-2">Pwin</th><th className="text-right px-3 py-2">Break-even</th><th className="text-right px-3 py-2">Edge</th>
-            <th className="text-right px-3 py-2">EV</th><th className="text-right px-3 py-2">EV adj</th><th className="text-left px-3 py-2">News</th><th className="text-left px-3 py-2">Flow</th>
+            <th className="text-right px-3 py-2">EV</th><th className="text-right px-3 py-2">EV adj</th><th className="text-left px-3 py-2">Week VWAP</th><th className="text-left px-3 py-2">News</th><th className="text-left px-3 py-2">Flow</th>
           </tr>
         </thead>
         <tbody>
@@ -36,6 +36,15 @@ function RowsTable({ res }: { res: ScreenerResponse }) {
               <td className={clsx('px-3 py-2 text-right tabular-nums font-semibold', r.edge > 0 ? 'text-emerald-400' : 'text-rose-400')}>{(100 * r.edge).toFixed(1)}p</td>
               <td className={clsx('px-3 py-2 text-right tabular-nums', r.ev > 0 ? 'text-emerald-300' : 'text-rose-300')}>{fmtMoney(r.ev)}</td>
               <td className={clsx('px-3 py-2 text-right tabular-nums', r.ev_adj > 0 ? 'text-emerald-300' : 'text-rose-300')}>{fmtMoney(r.ev_adj)}</td>
+              <td className="px-3 py-2 text-xs whitespace-nowrap">
+                {r.week_vwap_trend ? (
+                  <>
+                    <span className={clsx('font-semibold', r.week_vwap_trend === 'LONG' ? 'text-emerald-300' : r.week_vwap_trend === 'SHORT' ? 'text-rose-300' : 'text-slate-300')}>{r.week_vwap_trend}</span>
+                    <span className="text-slate-500"> {r.week_vwap_side?.toLowerCase()} {fmtNum(r.week_vwap, 2)}{r.week_vwap_slope_pct !== null && <> · {r.week_vwap_slope_pct > 0 ? '▲' : r.week_vwap_slope_pct < 0 ? '▼' : '='} {Math.abs(r.week_vwap_slope_pct).toFixed(3)}%</>}{r.week_vwap_sessions ? ` · ${r.week_vwap_sessions}d` : ''}</span>
+                    {r.week_vwap_conflict && <div className="text-amber-300">{r.week_vwap_conflict}</div>}
+                  </>
+                ) : <span className="text-slate-600">—</span>}
+              </td>
               <td className="px-3 py-2 text-xs">{r.news ?? <span className="text-slate-600">—</span>}{r.news_conflict && <div className="text-amber-300">{r.news_conflict}</div>}</td>
               <td className="px-3 py-2 text-xs">{r.flow ?? <span className="text-slate-600">—</span>}{r.flow_up_pct !== null && <span className="text-slate-500"> {fmtNum(r.flow_up_pct, 0)}%</span>}{r.flow_conflict && <div className="text-amber-300">{r.flow_conflict}</div>}</td>
             </tr>
