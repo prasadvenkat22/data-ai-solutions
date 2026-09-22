@@ -21,7 +21,7 @@ function RowsTable({ res }: { res: ScreenerResponse }) {
         <thead className="text-xs uppercase tracking-wider text-slate-500">
           <tr>
             <th className="text-left px-3 py-2">Spread</th><th className="text-right px-3 py-2">Cost</th><th className="text-right px-3 py-2">Width</th>
-            <th className="text-right px-3 py-2">Pwin</th><th className="text-right px-3 py-2">Break-even</th><th className="text-right px-3 py-2">Edge</th>
+            <th className="text-right px-3 py-2">Pwin</th><th className="text-right px-3 py-2" title="Net delta of the spread (long leg / short leg). The market's odds of finishing between the strikes.">Net Δ</th><th className="text-right px-3 py-2">Break-even</th><th className="text-right px-3 py-2">Edge</th>
             <th className="text-right px-3 py-2">EV</th><th className="text-right px-3 py-2">EV adj</th><th className="text-left px-3 py-2">Week VWAP</th><th className="text-right px-3 py-2">IV/RV</th><th className="text-left px-3 py-2">News</th><th className="text-left px-3 py-2">Flow</th>
           </tr>
         </thead>
@@ -32,6 +32,14 @@ function RowsTable({ res }: { res: ScreenerResponse }) {
               <td className="px-3 py-2 text-right tabular-nums">{fmtMoney(r.risk)}</td>
               <td className="px-3 py-2 text-right tabular-nums">{r.width}</td>
               <td className="px-3 py-2 text-right tabular-nums">{(100 * r.p_win).toFixed(1)}%</td>
+              <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap" title={r.delta_long !== null && r.delta_short !== null ? `long leg Δ ${r.delta_long.toFixed(2)} · short leg Δ ${r.delta_short.toFixed(2)} · chain P(max) ${(100 * r.p_imp).toFixed(0)}%` : undefined}>
+                {r.delta_net !== null ? (
+                  <>
+                    <span className={clsx('font-semibold', r.delta_net > 0.5 ? 'text-amber-300' : 'text-slate-200')}>{r.delta_net.toFixed(2)}</span>
+                    {r.delta_long !== null && r.delta_short !== null && <span className="text-slate-500 text-xs"> {r.delta_long.toFixed(2)}/{r.delta_short.toFixed(2)}</span>}
+                  </>
+                ) : <span className="text-slate-600">—</span>}
+              </td>
               <td className="px-3 py-2 text-right tabular-nums text-slate-400">{(100 * r.need).toFixed(1)}%</td>
               <td className={clsx('px-3 py-2 text-right tabular-nums font-semibold', r.edge > 0 ? 'text-emerald-400' : 'text-rose-400')}>{(100 * r.edge).toFixed(1)}p</td>
               <td className={clsx('px-3 py-2 text-right tabular-nums', r.ev > 0 ? 'text-emerald-300' : 'text-rose-300')}>{fmtMoney(r.ev)}</td>

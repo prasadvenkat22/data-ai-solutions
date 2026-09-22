@@ -117,6 +117,12 @@ export interface ScreenerRow {
   risk: number;
   reward: number;
   rr: number;
+  // The chain's deltas: the leg you own, the leg you sold, and the net
+  // (the market's odds of finishing between the strikes). For comparison
+  // with Pwin; not used in the ranking.
+  delta_long: number | null;
+  delta_short: number | null;
+  delta_net: number | null;
   p_imp: number;
   p_hist: number;
   p_mc: number;
