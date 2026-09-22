@@ -18,7 +18,9 @@ rest to this app). `NEXT_PUBLIC_API_URL` is empty in production on purpose.
   (`POST /api/users/{id}/reset-password`) that issues a temporary password
   shown once, for when the emailed link cannot work.
 - `/desk` (roles `admin`, `trader`) — live positions with the exit ladder,
-  `/desk/history`, `/desk/board` (screener), `/desk/controls`
+  `/desk/history`, `/desk/board` (screener: EV/edge ranking plus, per row, the
+  week-anchored VWAP lean LONG/SHORT/MIXED and the IV/RV regime rich/fair/cheap,
+  both shown and not ranked on), `/desk/controls`
   (kill switch, scheduler, tape read, two-step flatten — admin only).
 - `/ai` (role `admin`) — ask the trading book (guarded read-only SQL agent on
   Gemini), analyze a CSV/PDF upload, direct prompt.
