@@ -22,7 +22,7 @@ function RowsTable({ res }: { res: ScreenerResponse }) {
           <tr>
             <th className="text-left px-3 py-2">Spread</th><th className="text-right px-3 py-2">Cost</th><th className="text-right px-3 py-2">Width</th>
             <th className="text-right px-3 py-2">Pwin</th><th className="text-right px-3 py-2">Break-even</th><th className="text-right px-3 py-2">Edge</th>
-            <th className="text-right px-3 py-2">EV</th><th className="text-right px-3 py-2">EV adj</th><th className="text-left px-3 py-2">Week VWAP</th><th className="text-left px-3 py-2">News</th><th className="text-left px-3 py-2">Flow</th>
+            <th className="text-right px-3 py-2">EV</th><th className="text-right px-3 py-2">EV adj</th><th className="text-left px-3 py-2">Week VWAP</th><th className="text-right px-3 py-2">IV/RV</th><th className="text-left px-3 py-2">News</th><th className="text-left px-3 py-2">Flow</th>
           </tr>
         </thead>
         <tbody>
@@ -42,6 +42,14 @@ function RowsTable({ res }: { res: ScreenerResponse }) {
                     <span className={clsx('font-semibold', r.week_vwap_trend === 'LONG' ? 'text-emerald-300' : r.week_vwap_trend === 'SHORT' ? 'text-rose-300' : 'text-slate-300')}>{r.week_vwap_trend}</span>
                     <span className="text-slate-500"> {r.week_vwap_side?.toLowerCase()} {fmtNum(r.week_vwap, 2)}{r.week_vwap_slope_pct !== null && <> · {r.week_vwap_slope_pct > 0 ? '▲' : r.week_vwap_slope_pct < 0 ? '▼' : '='} {Math.abs(r.week_vwap_slope_pct).toFixed(3)}%</>}{r.week_vwap_sessions ? ` · ${r.week_vwap_sessions}d` : ''}</span>
                     {r.week_vwap_conflict && <div className="text-amber-300">{r.week_vwap_conflict}</div>}
+                  </>
+                ) : <span className="text-slate-600">—</span>}
+              </td>
+              <td className="px-3 py-2 text-right text-xs tabular-nums whitespace-nowrap" title={r.iv !== null && r.rv !== null ? `ATM IV ${(100 * r.iv).toFixed(0)}% · RV20 ${(100 * r.rv).toFixed(0)}%` : undefined}>
+                {r.iv_rv !== null ? (
+                  <>
+                    <span className={clsx('font-semibold', r.vol_regime === 'RICH' ? 'text-rose-300' : r.vol_regime === 'CHEAP' ? 'text-emerald-300' : 'text-slate-300')}>{r.iv_rv.toFixed(2)}</span>
+                    <span className="text-slate-500"> {r.vol_regime === 'RICH' ? 'rich · sell' : r.vol_regime === 'CHEAP' ? 'cheap · buy' : 'fair'}</span>
                   </>
                 ) : <span className="text-slate-600">—</span>}
               </td>

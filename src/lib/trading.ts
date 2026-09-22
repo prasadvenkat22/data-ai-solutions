@@ -139,6 +139,13 @@ export interface ScreenerRow {
   week_vwap_sessions: number | null;
   week_vwap_trend: 'LONG' | 'SHORT' | 'MIXED' | null;
   week_vwap_conflict: string | null;
+  // Volatility regime per underlying: ATM implied vol of the screened expiry
+  // over 20-day realised. RICH (>= 1.2) favours selling spreads, CHEAP (<= 0.8)
+  // favours buying them; the shadow books are scored by this ratio.
+  iv: number | null;
+  rv: number | null;
+  iv_rv: number | null;
+  vol_regime: 'RICH' | 'FAIR' | 'CHEAP' | null;
 }
 
 export interface ScreenerResponse {
