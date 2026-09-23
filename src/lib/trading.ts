@@ -203,6 +203,31 @@ export interface ScreenerParams {
   expiry: string;
 }
 
+// Tunable engine knobs (trading_engine/settings_overrides.py). `effective` is
+// what the next cron cycle trades on; `source` says which layer supplied it.
+export interface TradingSetting {
+  key: string;
+  label: string;
+  group: string;
+  kind: 'float' | 'int' | 'bool' | 'time';
+  default: string;
+  help: string;
+  unit: string;
+  min: number | null;
+  max: number | null;
+  allow_blank: boolean;
+  env_value: string | null;
+  override: string | null;
+  effective: string;
+  source: 'override' | 'env' | 'default';
+}
+
+export interface SettingsResponse {
+  path: string;
+  settings: TradingSetting[];
+  problems: string[];
+}
+
 const qs = (params: object) =>
   Object.entries(params as Record<string, string | number | boolean | undefined>)
     .filter(([, v]) => v !== undefined && v !== '')
@@ -221,6 +246,13 @@ export const trading = {
     ),
   killSwitch: (action: 'ACTIVATE' | 'DEACTIVATE') =>
     authJson<{ kill_switch_active: boolean }>(`/trading/kill-switch/toggle?action=${action}`, { method: 'POST' }),
+  settings: () => authJson<SettingsResponse>('/trading/settings'),
+  updateSettings: (values: Record<string, string>, unset: string[] = []) =>
+    authJson<SettingsResponse>('/trading/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values, unset }),
+    }),
   schedulerStart: () => authJson<{ scheduler_running: boolean; interval_seconds: number }>('/trading/scheduler/start', { method: 'POST' }),
   schedulerStop: () => authJson<{ scheduler_running: boolean; interval_seconds: number }>('/trading/scheduler/stop', { method: 'POST' }),
   flattenPreview: (underlying = '') =>

@@ -293,6 +293,7 @@ function Dashboard() {
         <Link href="/desk/history" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Closed trades</Link>
         <Link href="/desk/board" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Screener board</Link>
         <Link href="/desk/controls" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Controls</Link>
+        <Link href="/desk/settings" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Settings</Link>
         <Link href="/ai" className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700">Ask the book (AI)</Link>
       </div>
     </div>
