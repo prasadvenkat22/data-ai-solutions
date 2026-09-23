@@ -20,8 +20,8 @@ import {
   Layers,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { useAuth } from './AuthProvider';
-import { LogIn, LogOut, CandlestickChart, Bot, Mail, TrendingUp, Bell as BellIcon, UserCircle2 } from 'lucide-react';
+import { useAuth, useSiteAuth } from './AuthProvider';
+import { LogIn, LogOut, CandlestickChart, Bot, Mail, TrendingUp, Bell as BellIcon, UserCircle2, UserPlus } from 'lucide-react';
 
 // `roles` gates a whole menu: a visitor sees Home, Consulting and Contact;
 // a trader adds Trading; an admin sees everything. The API enforces the same
@@ -104,6 +104,7 @@ const navLinks: NavLink[] = [
       { label: 'Closed trades', href: '/desk/history' },
       { label: 'Screener board', href: '/desk/board' },
       { label: 'Engine controls', href: '/desk/controls' },
+      { label: 'Engine settings', href: '/desk/settings' },
     ],
   },
   { label: 'AI Lab', href: '/ai', icon: Bot, roles: ['admin'] },
@@ -113,7 +114,11 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const router = useRouter();
+  // Two independent sessions: `user` is the trading desk's (it gates the
+  // desk/admin menus), `siteUser` is the general site's Sign in / Sign up.
+  // Signing out of one never signs out of the other.
   const { user, logout, hasRole } = useAuth();
+  const { user: siteUser, logout: siteLogout } = useSiteAuth();
   const links = navLinks.filter((l) => !l.roles || hasRole(...l.roles));
 
   const isActive = (href: string) => {
@@ -182,25 +187,50 @@ export default function Navbar() {
 
           {/* CTA / session */}
           <div className="hidden md:flex items-center gap-2">
+            {/* General site */}
+            {siteUser ? (
+              <>
+                <span className="inline-flex items-center gap-1.5 px-2 py-2 text-xs text-slate-400" title={siteUser.email}>
+                  <UserCircle2 className="w-4 h-4" /> {siteUser.name || siteUser.email}
+                </span>
+                <button
+                  onClick={() => siteLogout()}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800"
+                >
+                  <LogOut className="w-4 h-4" /> Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/signin" className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800">
+                  <LogIn className="w-4 h-4" /> Sign in
+                </Link>
+                <Link href="/signup" className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg border border-slate-700 hover:bg-slate-800">
+                  <UserPlus className="w-4 h-4" /> Sign up
+                </Link>
+              </>
+            )}
+            <span className="w-px h-6 bg-slate-700 mx-1" aria-hidden />
+            {/* Trading desk */}
             {user ? (
               <>
                 {/* The email is the way to /account (change password). */}
                 <Link
                   href="/account"
-                  title="Your account"
+                  title="Your trading account"
                   className={clsx(
                     'inline-flex items-center gap-1.5 px-2 py-2 text-xs rounded-lg hover:bg-slate-800',
                     router.pathname === '/account' ? 'text-white' : 'text-slate-400 hover:text-white'
                   )}
                 >
-                  <UserCircle2 className="w-4 h-4" />
+                  <CandlestickChart className="w-4 h-4" />
                   {user.email}{user.role ? ` · ${user.role}` : ''}
                 </Link>
                 <button
                   onClick={() => { logout(); void router.push('/'); }}
                   className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800"
                 >
-                  <LogOut className="w-4 h-4" /> Sign out
+                  <LogOut className="w-4 h-4" /> Trading sign out
                 </button>
               </>
             ) : (
@@ -208,7 +238,7 @@ export default function Navbar() {
                 href="/login"
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-indigo-500/30"
               >
-                <LogIn className="w-4 h-4" /> Sign in
+                <CandlestickChart className="w-4 h-4" /> Trading sign in
               </Link>
             )}
           </div>
@@ -258,6 +288,19 @@ export default function Navbar() {
             </div>
           ))}
           <div className="pt-2 border-t border-slate-800 space-y-1">
+            {siteUser ? (
+              <button
+                onClick={() => { setMobileOpen(false); siteLogout(); }}
+                className="block w-full text-center px-4 py-2.5 text-sm font-semibold bg-slate-800 text-white rounded-lg"
+              >
+                Sign out ({siteUser.email})
+              </button>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <Link href="/signin" onClick={() => setMobileOpen(false)} className="text-center px-4 py-2.5 text-sm font-semibold bg-slate-800 text-white rounded-lg">Sign in</Link>
+                <Link href="/signup" onClick={() => setMobileOpen(false)} className="text-center px-4 py-2.5 text-sm font-semibold border border-slate-700 text-white rounded-lg">Sign up</Link>
+              </div>
+            )}
             {user ? (
               <>
                 <Link
@@ -265,13 +308,13 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800"
                 >
-                  <UserCircle2 className="w-4 h-4" /> Your account
+                  <UserCircle2 className="w-4 h-4" /> Your trading account
                 </Link>
                 <button
                   onClick={() => { setMobileOpen(false); logout(); void router.push('/'); }}
                   className="block w-full text-center px-4 py-2.5 text-sm font-semibold bg-slate-800 text-white rounded-lg"
                 >
-                  Sign out ({user.email})
+                  Trading sign out ({user.email})
                 </button>
               </>
             ) : (
@@ -280,7 +323,7 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="block w-full text-center px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg"
               >
-                Sign in
+                Trading sign in
               </Link>
             )}
           </div>

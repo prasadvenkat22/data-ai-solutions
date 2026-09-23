@@ -29,26 +29,6 @@ export interface TokenResponse {
 
 const isBrowser = () => typeof window !== 'undefined';
 
-export function getAccessToken(): string | null {
-  return isBrowser() ? window.localStorage.getItem(ACCESS_KEY) : null;
-}
-
-export function getRefreshToken(): string | null {
-  return isBrowser() ? window.localStorage.getItem(REFRESH_KEY) : null;
-}
-
-export function setTokens(t: TokenResponse): void {
-  if (!isBrowser()) return;
-  window.localStorage.setItem(ACCESS_KEY, t.access_token);
-  window.localStorage.setItem(REFRESH_KEY, t.refresh_token);
-}
-
-export function clearTokens(): void {
-  if (!isBrowser()) return;
-  window.localStorage.removeItem(ACCESS_KEY);
-  window.localStorage.removeItem(REFRESH_KEY);
-}
-
 async function detailOf(res: Response, fallback: string): Promise<string> {
   try {
     const body = await res.json();
@@ -60,73 +40,135 @@ async function detailOf(res: Response, fallback: string): Promise<string> {
   return fallback;
 }
 
-export async function login(email: string, password: string): Promise<TokenResponse> {
-  const res = await fetch(`${API_BASE}/auth/login`, {
+/**
+ * One login session: its own token pair in localStorage and its own shared
+ * refresh. There are two, on the same accounts API:
+ *
+ *   desk -- the trading desk, AI lab and admin pages (the original keys, so
+ *           nobody already signed in is signed out by this change);
+ *   site -- the general site's Sign in / Sign up.
+ *
+ * Signing out of one leaves the other alone. What a session may DO is still
+ * the account's role, enforced by the API: a site sign-up is role 'user' and
+ * gets 403 from every /trading route whichever session carries it.
+ */
+export function createSession(prefix: string) {
+  const ACCESS_KEY = `${prefix}_access_token`;
+  const REFRESH_KEY = `${prefix}_refresh_token`;
+
+  const getAccessToken = (): string | null => (isBrowser() ? window.localStorage.getItem(ACCESS_KEY) : null);
+  const getRefreshToken = (): string | null => (isBrowser() ? window.localStorage.getItem(REFRESH_KEY) : null);
+
+  const setTokens = (t: TokenResponse): void => {
+    if (!isBrowser()) return;
+    window.localStorage.setItem(ACCESS_KEY, t.access_token);
+    window.localStorage.setItem(REFRESH_KEY, t.refresh_token);
+  };
+
+  const clearTokens = (): void => {
+    if (!isBrowser()) return;
+    window.localStorage.removeItem(ACCESS_KEY);
+    window.localStorage.removeItem(REFRESH_KEY);
+  };
+
+  const login = async (email: string, password: string): Promise<TokenResponse> => {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) throw new Error(await detailOf(res, `Login failed (${res.status})`));
+    const tokens = (await res.json()) as TokenResponse;
+    setTokens(tokens);
+    return tokens;
+  };
+
+  let refreshing: Promise<boolean> | null = null;
+
+  const refreshTokens = (): Promise<boolean> => {
+    if (refreshing) return refreshing;
+    refreshing = (async () => {
+      const rt = getRefreshToken();
+      if (!rt) return false;
+      try {
+        const res = await fetch(`${API_BASE}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: rt }),
+        });
+        if (!res.ok) {
+          clearTokens();
+          return false;
+        }
+        setTokens((await res.json()) as TokenResponse);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        refreshing = null;
+      }
+    })();
+    return refreshing;
+  };
+
+  const authFetch = async (path: string, init: RequestInit = {}, retry = true): Promise<Response> => {
+    const headers = new Headers(init.headers ?? {});
+    const token = getAccessToken();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+    if (res.status === 401 && retry && (await refreshTokens())) {
+      return authFetch(path, init, false);
+    }
+    return res;
+  };
+
+  /** JSON helper that turns a non-2xx into an Error carrying the API's detail. */
+  const authJson = async <T,>(path: string, init: RequestInit = {}): Promise<T> => {
+    const res = await authFetch(path, init);
+    if (!res.ok) throw new Error(await detailOf(res, `API error ${res.status}`));
+    return (await res.json()) as T;
+  };
+
+  const fetchMe = async (): Promise<Me | null> => {
+    if (!getAccessToken()) return null;
+    const res = await authFetch('/auth/me');
+    if (!res.ok) return null;
+    return (await res.json()) as Me;
+  };
+
+  return { getAccessToken, getRefreshToken, setTokens, clearTokens, login, refreshTokens,
+           authFetch, authJson, fetchMe, logout: clearTokens };
+}
+
+export type Session = ReturnType<typeof createSession>;
+
+export const deskSession = createSession('dai');
+export const siteSession = createSession('dai_site');
+
+// The desk session under its original names; every existing caller uses these.
+export const {
+  getAccessToken, getRefreshToken, setTokens, clearTokens, login, refreshTokens,
+  authFetch, authJson, fetchMe, logout,
+} = deskSession;
+
+/** Public sign-up. Always the same reply whether or not the email exists. */
+export async function signup(name: string, email: string, password: string): Promise<string> {
+  const res = await fetch(`${API_BASE}/auth/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ name, email, password }),
   });
-  if (!res.ok) throw new Error(await detailOf(res, `Login failed (${res.status})`));
-  const tokens = (await res.json()) as TokenResponse;
-  setTokens(tokens);
-  return tokens;
+  if (!res.ok) throw new Error(await detailOf(res, `Sign-up failed (${res.status})`));
+  return ((await res.json()) as { detail: string }).detail;
 }
 
-let refreshing: Promise<boolean> | null = null;
-
-export function refreshTokens(): Promise<boolean> {
-  if (refreshing) return refreshing;
-  refreshing = (async () => {
-    const rt = getRefreshToken();
-    if (!rt) return false;
-    try {
-      const res = await fetch(`${API_BASE}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: rt }),
-      });
-      if (!res.ok) {
-        clearTokens();
-        return false;
-      }
-      setTokens((await res.json()) as TokenResponse);
-      return true;
-    } catch {
-      return false;
-    } finally {
-      refreshing = null;
-    }
-  })();
-  return refreshing;
-}
-
-export async function authFetch(path: string, init: RequestInit = {}, retry = true): Promise<Response> {
-  const headers = new Headers(init.headers ?? {});
-  const token = getAccessToken();
-  if (token) headers.set('Authorization', `Bearer ${token}`);
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
-  if (res.status === 401 && retry && (await refreshTokens())) {
-    return authFetch(path, init, false);
-  }
-  return res;
-}
-
-/** JSON helper that turns a non-2xx into an Error carrying the API's detail. */
-export async function authJson<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const res = await authFetch(path, init);
-  if (!res.ok) throw new Error(await detailOf(res, `API error ${res.status}`));
-  return (await res.json()) as T;
-}
-
-export async function fetchMe(): Promise<Me | null> {
-  if (!getAccessToken()) return null;
-  const res = await authFetch('/auth/me');
-  if (!res.ok) return null;
-  return (await res.json()) as Me;
-}
-
-export function logout(): void {
-  clearTokens();
+export async function verifyEmail(token: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/auth/verify-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+  if (!res.ok) throw new Error(await detailOf(res, `Confirmation failed (${res.status})`));
 }
 
 // ---------------------------------------------------------------------------
@@ -173,4 +215,11 @@ export async function changePassword(currentPassword: string, newPassword: strin
     body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
   });
   if (!res.ok) throw new Error(await detailOf(res, `Change failed (${res.status})`));
+}
+
+/** A post-login redirect target: same-site paths only, never '//host' or 'https://'. */
+export function safeNext(next: unknown, fallback: string): string {
+  return typeof next === 'string' && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\')
+    ? next
+    : fallback;
 }

@@ -3,13 +3,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FormEvent, useEffect, useState } from 'react';
 import { Loader2, Lock, LogIn, Mail } from 'lucide-react';
-import { useAuth } from '@/components/AuthProvider';
+import { useSiteAuth } from '@/components/AuthProvider';
 import { safeNext } from '@/lib/auth';
 
-export default function LoginPage() {
-  const { user, loading, login } = useAuth();
+/** The general site's sign-in. Separate session from /login (the trading desk). */
+export default function SignInPage() {
+  const { user, loading, login } = useSiteAuth();
   const router = useRouter();
-  const next = safeNext(router.query.next, '/desk');
+  const next = safeNext(router.query.next, '/');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export default function LoginPage() {
   return (
     <>
       <Head>
-        <title>Trading sign in — Data AI Systems</title>
+        <title>Sign in — Data AI Systems</title>
       </Head>
       <div className="min-h-[80vh] flex items-center justify-center px-4">
         <div className="w-full max-w-md">
@@ -46,8 +47,8 @@ export default function LoginPage() {
                 <Lock className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Trading sign in</h1>
-                <p className="text-slate-400 text-sm">Trading desk and AI lab are for registered users.</p>
+                <h1 className="text-xl font-bold text-white">Sign in</h1>
+                <p className="text-slate-400 text-sm">Your Data AI Systems account.</p>
               </div>
             </div>
 
@@ -97,19 +98,14 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-4 text-right">
-              <Link href="/forgot-password" className="text-sm text-indigo-300 hover:text-indigo-200">
-                Forgot password?
-              </Link>
+            <div className="mt-4 flex justify-between text-sm">
+              <Link href="/signup" className="text-indigo-300 hover:text-indigo-200">Create an account</Link>
+              <Link href="/forgot-password" className="text-indigo-300 hover:text-indigo-200">Forgot password?</Link>
             </div>
 
             <p className="text-xs text-slate-500 mt-6">
-              Sessions expire after inactivity. Accounts are created by an administrator; if you have one
-              and no password yet, or have forgotten it, use “Forgot password?” to set a new one by email.
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              Not a trader? <Link href="/signin" className="text-indigo-300 hover:text-indigo-200">Sign in to the site</Link> or{' '}
-              <Link href="/signup" className="text-indigo-300 hover:text-indigo-200">create an account</Link>.
+              Trading desk users: use <Link href="/login" className="text-indigo-300 hover:text-indigo-200">Trading sign in</Link> instead.
+              The two are signed in and out separately.
             </p>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { fetchMe, login as apiLogin, logout as apiLogout, type Me } from '@/lib/auth';
+import { deskSession, siteSession, type Me, type Session } from '@/lib/auth';
 
 interface AuthState {
   user: Me | null;
@@ -10,26 +10,27 @@ interface AuthState {
   hasRole: (...roles: string[]) => boolean;
 }
 
-const AuthContext = createContext<AuthState>({
+const empty: AuthState = {
   user: null,
   loading: true,
   login: async () => null,
   logout: () => undefined,
   refresh: async () => undefined,
   hasRole: () => false,
-});
+};
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+/** Session state for one token pair; the desk and the site each get one. */
+function useSessionState(session: Session): AuthState {
   const [user, setUser] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     try {
-      setUser(await fetchMe());
+      setUser(await session.fetchMe());
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     void refresh();
@@ -37,20 +38,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string) => {
-      await apiLogin(email, password);
-      const me = await fetchMe();
+      await session.login(email, password);
+      const me = await session.fetchMe();
       setUser(me);
       return me;
     },
-    []
+    [session]
   );
 
   const logout = useCallback(() => {
-    apiLogout();
+    session.logout();
     setUser(null);
-  }, []);
+  }, [session]);
 
-  const value = useMemo<AuthState>(
+  return useMemo<AuthState>(
     () => ({
       user,
       loading,
@@ -61,8 +62,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }),
     [user, loading, login, logout, refresh]
   );
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+const AuthContext = createContext<AuthState>(empty);
+const SiteAuthContext = createContext<AuthState>(empty);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const desk = useSessionState(deskSession);
+  const site = useSessionState(siteSession);
+  return (
+    <AuthContext.Provider value={desk}>
+      <SiteAuthContext.Provider value={site}>{children}</SiteAuthContext.Provider>
+    </AuthContext.Provider>
+  );
+}
+
+/** The trading-desk session (desk, AI lab, admin pages). */
 export const useAuth = () => useContext(AuthContext);
+/** The general site's session (Sign in / Sign up), independent of the desk's. */
+export const useSiteAuth = () => useContext(SiteAuthContext);
