@@ -39,7 +39,9 @@ rest to this app). `NEXT_PUBLIC_API_URL` is empty in production on purpose.
   `POST /api/chat/ask`: "latest news on MU" is answered from the stored
   RSS/Polygon headlines with sources, anything else by the model with no access
   to trading data. File uploads show for desk admins only. The trading chat is
-  `/ai`.
+  `/ai`. The header says who the chat is signed in as; a 401/403 shows "Sign in
+  required" and drops back to the sign-up prompt, and any other failure shows
+  the API's own message ("busy, try again") rather than a generic error.
 - `/ai` — the trading chat. Roles `admin` and `trader`: ask the trading book
   (guarded read-only SQL agent on Gemini). Admin only: analyze a CSV/PDF upload,
   direct prompt.
