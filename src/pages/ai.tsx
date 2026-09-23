@@ -3,6 +3,7 @@ import { useState } from 'react';
 import clsx from 'clsx';
 import { AlertTriangle, BrainCircuit, Database, FileUp, Loader2, MessageSquare, Send } from 'lucide-react';
 import RequireAuth from '@/components/RequireAuth';
+import { useAuth } from '@/components/AuthProvider';
 import { AgentAnswer, genai } from '@/lib/trading';
 
 type Tab = 'ask' | 'upload' | 'prompt';
@@ -14,7 +15,14 @@ const EXAMPLES = [
   'List the index events recorded and their effective dates.',
 ];
 
+// Traders get the trading chat ("Ask the book"); file analysis and the direct
+// prompt stay admin-only, as the API enforces (/api/genai/agent/ask is the
+// only GENAI route open to trader).
+const TABS = [['ask', 'Ask the book', Database, false], ['upload', 'Analyze a file', FileUp, true], ['prompt', 'Direct prompt', MessageSquare, true]] as const;
+
 function Lab() {
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole('admin');
   const [tab, setTab] = useState<Tab>('ask');
   const [query, setQuery] = useState('');
   const [files, setFiles] = useState<File[]>([]);
@@ -52,7 +60,7 @@ function Lab() {
       </div>
 
       <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1 w-fit mb-4">
-        {([['ask', 'Ask the book', Database], ['upload', 'Analyze a file', FileUp], ['prompt', 'Direct prompt', MessageSquare]] as const).map(([k, label, Icon]) => (
+        {TABS.filter(([, , , adminOnly]) => isAdmin || !adminOnly).map(([k, label, Icon]) => (
           <button key={k} onClick={() => { setTab(k); setAnswer(null); }} className={clsx('inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md', tab === k ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white')}><Icon className="w-4 h-4" />{label}</button>
         ))}
       </div>
@@ -105,7 +113,7 @@ export default function AIPage() {
   return (
     <>
       <Head><title>AI lab — Data AI Systems</title></Head>
-    <RequireAuth roles={['admin']}>
+    <RequireAuth roles={['admin', 'trader']}>
       <Lab />
     </RequireAuth>
     </>

@@ -107,7 +107,7 @@ const navLinks: NavLink[] = [
       { label: 'Engine settings', href: '/desk/settings' },
     ],
   },
-  { label: 'AI Lab', href: '/ai', icon: Bot, roles: ['admin'] },
+  { label: 'AI Lab', href: '/ai', icon: Bot, roles: ['admin', 'trader'] },
 ];
 
 export default function Navbar() {

@@ -40,8 +40,9 @@ rest to this app). `NEXT_PUBLIC_API_URL` is empty in production on purpose.
   RSS/Polygon headlines with sources, anything else by the model with no access
   to trading data. File uploads show for desk admins only. The trading chat is
   `/ai`.
-- `/ai` (role `admin`) — ask the trading book (guarded read-only SQL agent on
-  Gemini), analyze a CSV/PDF upload, direct prompt.
+- `/ai` — the trading chat. Roles `admin` and `trader`: ask the trading book
+  (guarded read-only SQL agent on Gemini). Admin only: analyze a CSV/PDF upload,
+  direct prompt.
 
 Deploy on the droplet:
 
