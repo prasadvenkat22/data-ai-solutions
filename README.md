@@ -26,7 +26,9 @@ rest to this app). `NEXT_PUBLIC_API_URL` is empty in production on purpose.
 - `/users` (role `admin`) — also has a per-user Reset password button
   (`POST /api/users/{id}/reset-password`) that issues a temporary password
   shown once, for when the emailed link cannot work.
-- `/desk` (roles `admin`, `trader`) — live positions with the exit ladder,
+- `/desk` (roles `admin`, `trader`) — a Macro card (10Y / VIX / crude vs the open,
+  the risk-off gates, the rotation's macro verdict, today's events and data releases;
+  `GET /trading/macro`), then live positions with the exit ladder,
   `/desk/history`, `/desk/board` (screener: EV/edge ranking plus, per row, the
   week-anchored VWAP lean LONG/SHORT/MIXED and the IV/RV regime rich/fair/cheap,
   both shown and not ranked on), `/desk/controls`

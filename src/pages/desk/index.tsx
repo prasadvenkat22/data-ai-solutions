@@ -7,6 +7,7 @@ import {
   Loader2, Power, RefreshCw, ShieldCheck, Target, TrendingUp, Zap,
 } from 'lucide-react';
 import RequireAuth from '@/components/RequireAuth';
+import MacroPanel from '@/components/MacroPanel';
 import {
   BrokerPosition, PositionsResponse, StatusResponse, fmtMoney, fmtNum, fmtPct, isExpiringToday, trading,
 } from '@/lib/trading';
@@ -209,6 +210,8 @@ function Dashboard() {
           </button>
         </div>
       </div>
+
+      <MacroPanel />
 
       {error && (
         <div className="mb-6 flex items-center gap-2 bg-rose-950/40 border border-rose-800/50 text-rose-200 rounded-xl px-4 py-3 text-sm">

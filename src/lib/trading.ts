@@ -222,6 +222,25 @@ export interface TradingSetting {
   source: 'override' | 'env' | 'default';
 }
 
+// The engine's macro risk gates right now (GET /trading/macro).
+export interface MacroGate { name: string; value: string; limit: string; tripped: boolean }
+export interface MacroResponse {
+  readings: {
+    vix: { level: number; session_open: number; change_pct: number } | null;
+    crude: { level: number; session_open: number; change_pct: number } | null;
+    tnx: { level: number; session_open: number; change_bps: number } | null;
+  };
+  gates: MacroGate[];
+  risk_off: boolean;
+  engine: { sentiment: string | null; status: string | null; at: string | null };
+  rotation: { verdict: string; confidence: number | null } | null;
+  calendar: {
+    event_day: boolean;
+    note: string | null;
+    releases: Array<{ date: string; time: string; name: string; note?: string }>;
+  };
+}
+
 export interface SettingsResponse {
   path: string;
   settings: TradingSetting[];
@@ -247,6 +266,7 @@ export const trading = {
   killSwitch: (action: 'ACTIVATE' | 'DEACTIVATE') =>
     authJson<{ kill_switch_active: boolean }>(`/trading/kill-switch/toggle?action=${action}`, { method: 'POST' }),
   settings: () => authJson<SettingsResponse>('/trading/settings'),
+  macro: () => authJson<MacroResponse>('/trading/macro'),
   updateSettings: (values: Record<string, string>, unset: string[] = []) =>
     authJson<SettingsResponse>('/trading/settings', {
       method: 'PUT',
