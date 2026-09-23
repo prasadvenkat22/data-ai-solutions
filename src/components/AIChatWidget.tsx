@@ -12,11 +12,14 @@ import {
   FileText,
   AlertCircle,
 } from 'lucide-react';
-import { genaiLLM, genaiQueryUpload, newsAsk, NewsAnswer } from '@/lib/api';
+import Link from 'next/link';
+import { chatAsk, genaiQueryUpload, type ChatAnswer } from '@/lib/api';
+import { deskSession, siteSession } from '@/lib/auth';
+import { useAuth, useSiteAuth } from './AuthProvider';
 import type { ChatMessage } from '@/types';
 
 /** The summary, then up to five linked sources so a reader can check it. */
-function formatNews(n: NewsAnswer): string {
+function formatNews(n: ChatAnswer): string {
   const sources = n.headlines
     .slice(0, 5)
     .map((h) => `- ${h.title}${h.source ? ` (${h.source})` : ''}${h.url ? `\n  ${h.url}` : ''}`)
@@ -25,13 +28,21 @@ function formatNews(n: NewsAnswer): string {
 }
 
 export default function AIChatWidget() {
+  // No AI for anonymous visitors: the API refuses /api/chat without a token,
+  // and the panel shows a sign-up prompt instead of an input. Either session
+  // will do -- a site sign-up (verified email) or a desk account. Uploads go
+  // to the admin-only GENAI routes, so only a desk admin sees the paperclip.
+  const site = useSiteAuth();
+  const desk = useAuth();
+  const session = site.user ? siteSession : desk.user ? deskSession : null;
+  const canUpload = desk.hasRole('admin');
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
       content:
-        'Hello! I\'m the Data AI Systems assistant (Gemini). Ask about the services, ask for the latest news on a stock (e.g. "latest news on MU"), or upload a PDF/CSV and I\'ll analyze it. For questions about the trading book, use the AI lab.',
+        'Hello! I\'m the Data AI Systems assistant. Ask about our services, or for the latest news on a stock (e.g. "latest news on MU"). I have no access to trading accounts; trading desk users have the AI lab for that.',
     },
   ]);
   const [input, setInput] = useState('');
@@ -83,16 +94,9 @@ export default function AIChatWidget() {
           if (!reply) reply = 'No relevant content found in the uploaded file.';
         }
       } else {
-        // News first: the public route says whether this is a "latest news on
-        // MU" question and answers it from the feeds; anything else goes to
-        // the model as before.
-        const news = await newsAsk(text).catch(() => null);
-        if (news?.is_news && news.answer) {
-          reply = formatNews(news);
-        } else {
-          const res = await genaiLLM(text);
-          reply = res.content;
-        }
+        if (!session) throw new Error('Please sign in to use the assistant.');
+        const res = await chatAsk(session, text);
+        reply = res.kind === 'news' ? formatNews(res) : res.answer;
       }
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (err: any) {
@@ -190,7 +194,27 @@ export default function AIChatWidget() {
             </button>
           </div>
 
-          {!minimized && (
+          {!minimized && !session && (
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-8 gap-4">
+              <Bot className="w-10 h-10 text-indigo-400" />
+              <div>
+                <p className="text-white font-semibold">Sign up to use the assistant</p>
+                <p className="text-slate-400 text-sm mt-1">
+                  The AI assistant is for registered members: ask about our services or the latest news on a stock.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Link href="/signup" onClick={() => setOpen(false)} className="px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500">
+                  Sign up
+                </Link>
+                <Link href="/signin" onClick={() => setOpen(false)} className="px-4 py-2 rounded-lg text-sm font-semibold border border-slate-600 text-slate-200 hover:bg-slate-800">
+                  Sign in
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {!minimized && session && (
             <>
               {/* Messages */}
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scroll-smooth">
@@ -286,7 +310,7 @@ export default function AIChatWidget() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Ask a question or upload a file…"
+                    placeholder={canUpload ? 'Ask a question or upload a file…' : 'Ask a question…'}
                     rows={1}
                     className="flex-1 bg-transparent text-sm text-slate-200 placeholder-slate-500 resize-none outline-none max-h-24 py-0.5"
                     style={{ scrollbarWidth: 'none' }}
@@ -300,13 +324,15 @@ export default function AIChatWidget() {
                       onChange={handleFileChange}
                       className="hidden"
                     />
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="text-slate-400 hover:text-indigo-400 transition-colors p-1"
-                      title="Upload PDF or CSV"
-                    >
-                      <Paperclip className="w-4 h-4" />
-                    </button>
+                    {canUpload && (
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="text-slate-400 hover:text-indigo-400 transition-colors p-1"
+                        title="Upload PDF or CSV"
+                      >
+                        <Paperclip className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={handleSend}
                       disabled={loading || (!input.trim() && files.length === 0)}
@@ -321,7 +347,7 @@ export default function AIChatWidget() {
                   </div>
                 </div>
                 <p className="text-center text-slate-600 text-xs mt-1.5">
-                  Powered by DataAI GenAI · Supports PDF & CSV
+                  {canUpload ? 'Powered by DataAI GenAI · Supports PDF & CSV' : 'Powered by DataAI GenAI · news from RSS & Polygon'}
                 </p>
               </div>
             </>

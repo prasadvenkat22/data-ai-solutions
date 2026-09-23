@@ -1,4 +1,4 @@
-import { authFetch } from './auth';
+import { authFetch, type Session } from './auth';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
 
@@ -127,16 +127,7 @@ export const api = {
   },
 };
 
-export async function genaiLLM(prompt: string) {
-  return apiPost<{ content: string; metadata: Record<string, unknown> }>('/api/genai/llm', {
-    prompt,
-    llm_provider: 'gemini',
-    llm_model: 'gemini-3.1-flash-lite',
-    max_tokens: 800,
-  });
-}
-
-export interface NewsHeadline {
+export interface ChatHeadline {
   title: string;
   source: string | null;
   published: string | null;
@@ -144,26 +135,28 @@ export interface NewsHeadline {
   sentiment: string | null;
 }
 
-export interface NewsAnswer {
-  is_news: boolean;
+export interface ChatAnswer {
+  kind: 'news' | 'chat';
+  answer: string;
   symbol: string | null;
-  answer: string | null;
-  headlines: NewsHeadline[];
+  headlines: ChatHeadline[];
 }
 
 /**
- * The public news route: "latest news on MU" answered from the RSS/Polygon
- * headlines the pipeline stores. No token -- anonymous visitors use the chat
- * widget -- and `is_news: false` means "not a news question, ask the model".
+ * The site chat: signed-in, verified accounts only (the API returns 401 to
+ * anyone else). "Latest news on MU" is answered from the stored RSS/Polygon
+ * headlines, anything else by the model with no access to trading data. The
+ * caller passes whichever session is signed in -- site or desk.
  */
-export async function newsAsk(query: string): Promise<NewsAnswer> {
-  const res = await fetch(`${API_BASE}/api/news/ask`, {
+export async function chatAsk(session: Session, query: string): Promise<ChatAnswer> {
+  const res = await session.authFetch('/api/chat/ask', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: query.slice(0, 300) }),
+    body: JSON.stringify({ query: query.slice(0, 2000) }),
   });
-  if (res.status === 429) throw new Error('Too many news questions in a minute. Please wait a moment.');
-  if (!res.ok) throw new Error(`News error ${res.status}`);
+  if (res.status === 401) throw new Error('Your session has ended. Please sign in again.');
+  if (res.status === 429) throw new Error('Too many questions in a minute. Please wait a moment.');
+  if (!res.ok) throw new Error(`Assistant error ${res.status}`);
   return res.json();
 }
 

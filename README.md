@@ -34,9 +34,12 @@ rest to this app). `NEXT_PUBLIC_API_URL` is empty in production on purpose.
   `/desk/settings` (stop loss, stall, give-back, budgets: shows default,
   `.env.production` and override per knob; saving is admin only and the next
   cron cycle trades on it, see `commands.txt` in the API repo).
-- Chat widget (every page) — "latest news on MU" goes to the public
-  `POST /api/news/ask` (stored RSS/Polygon headlines, summarised, with sources);
-  anything else falls through to the direct prompt.
+- Chat widget (every page) — **signed-in accounts only** (site or desk
+  session); anonymous visitors see a Sign up / Sign in prompt and no AI.
+  `POST /api/chat/ask`: "latest news on MU" is answered from the stored
+  RSS/Polygon headlines with sources, anything else by the model with no access
+  to trading data. File uploads show for desk admins only. The trading chat is
+  `/ai`.
 - `/ai` (role `admin`) — ask the trading book (guarded read-only SQL agent on
   Gemini), analyze a CSV/PDF upload, direct prompt.
 

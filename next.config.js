@@ -15,7 +15,7 @@ const nextConfig = {
       { source: '/auth/:path*',        destination: `${backend}/auth/:path*` },
       { source: '/trading/:path*',     destination: `${backend}/trading/:path*` },
       { source: '/api/genai/:path*',   destination: `${backend}/api/genai/:path*` },
-      { source: '/api/news/:path*',    destination: `${backend}/api/news/:path*` },     // public: the chat widget's news answers
+      { source: '/api/chat/:path*',    destination: `${backend}/api/chat/:path*` },     // chat widget: signed-in accounts only
       { source: '/api/contact/:path*', destination: `${backend}/api/contact/:path*` },  // inquiry, subscribe, confirm, unsubscribe, subscribers
       { source: '/api/users/:path*',   destination: `${backend}/api/users/:path*` },    // admin user management (reset-password button on /users)
     ];
