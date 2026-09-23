@@ -148,15 +148,25 @@ export interface ChatAnswer {
  * headlines, anything else by the model with no access to trading data. The
  * caller passes whichever session is signed in -- site or desk.
  */
+/** Thrown when the chat needs a (fresh) sign-in; the widget shows the sign-up prompt. */
+export class SignInRequired extends Error {}
+
 export async function chatAsk(session: Session, query: string): Promise<ChatAnswer> {
   const res = await session.authFetch('/api/chat/ask', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query: query.slice(0, 2000) }),
   });
-  if (res.status === 401) throw new Error('Your session has ended. Please sign in again.');
+  if (res.status === 401 || res.status === 403) {
+    throw new SignInRequired('Sign in required: please sign in or sign up to use the assistant.');
+  }
   if (res.status === 429) throw new Error('Too many questions in a minute. Please wait a moment.');
-  if (!res.ok) throw new Error(`Assistant error ${res.status}`);
+  if (!res.ok) {
+    // The API's own words ("busy right now, try again") beat a status code.
+    let detail = '';
+    try { detail = (await res.json())?.detail ?? ''; } catch { /* not JSON */ }
+    throw new Error(typeof detail === 'string' && detail ? detail : 'The assistant is unavailable right now. Please try again in a moment.');
+  }
   return res.json();
 }
 

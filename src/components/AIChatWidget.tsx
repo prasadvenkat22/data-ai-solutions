@@ -13,7 +13,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import Link from 'next/link';
-import { chatAsk, genaiQueryUpload, type ChatAnswer } from '@/lib/api';
+import { chatAsk, genaiQueryUpload, SignInRequired, type ChatAnswer } from '@/lib/api';
 import { deskSession, siteSession } from '@/lib/auth';
 import { useAuth, useSiteAuth } from './AuthProvider';
 import type { ChatMessage } from '@/types';
@@ -35,6 +35,7 @@ export default function AIChatWidget() {
   const site = useSiteAuth();
   const desk = useAuth();
   const session = site.user ? siteSession : desk.user ? deskSession : null;
+  const signedInAs = site.user?.email ?? desk.user?.email ?? null;
   const canUpload = desk.hasRole('admin');
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -101,9 +102,15 @@ export default function AIChatWidget() {
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (err: any) {
       const msg = err.message || '';
-      if (msg.includes('413') || msg.toLowerCase().includes('too large')) {
+      if (err instanceof SignInRequired) {
+        // The token was missing, expired or refused: re-read both sessions so
+        // a dead one drops out and the panel falls back to the sign-up prompt.
+        setError(msg);
+        void site.refresh();
+        void desk.refresh();
+      } else if (msg.includes('413') || msg.toLowerCase().includes('too large')) {
         setError('File is too large. Please upload a CSV under 1 MB or a PDF under 5 MB.');
-      } else if (msg.includes('502') || msg.includes('unreachable')) {
+      } else if (uploadedFiles.length > 0 && (msg.includes('502') || msg.includes('unreachable'))) {
         setError('AI backend is currently unavailable. Please try again shortly.');
       } else {
         setError(msg || 'Something went wrong. Please try again.');
@@ -175,10 +182,14 @@ export default function AIChatWidget() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white font-semibold text-sm leading-tight">DataAI Assistant</p>
-              <p className="text-emerald-400 text-xs flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block" />
-                Online
-              </p>
+              {signedInAs ? (
+                <p className="text-emerald-400 text-xs flex items-center gap-1 truncate" title={signedInAs}>
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block flex-shrink-0" />
+                  Signed in as {signedInAs}
+                </p>
+              ) : (
+                <p className="text-amber-300 text-xs">Sign in required</p>
+              )}
             </div>
             <button
               onClick={() => setMinimized(!minimized)}
