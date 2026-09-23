@@ -12,8 +12,17 @@ import {
   FileText,
   AlertCircle,
 } from 'lucide-react';
-import { genaiLLM, genaiQueryUpload } from '@/lib/api';
+import { genaiLLM, genaiQueryUpload, newsAsk, NewsAnswer } from '@/lib/api';
 import type { ChatMessage } from '@/types';
+
+/** The summary, then up to five linked sources so a reader can check it. */
+function formatNews(n: NewsAnswer): string {
+  const sources = n.headlines
+    .slice(0, 5)
+    .map((h) => `- ${h.title}${h.source ? ` (${h.source})` : ''}${h.url ? `\n  ${h.url}` : ''}`)
+    .join('\n');
+  return sources ? `${n.answer}\n\nSources:\n${sources}` : n.answer ?? '';
+}
 
 export default function AIChatWidget() {
   const [open, setOpen] = useState(false);
@@ -22,7 +31,7 @@ export default function AIChatWidget() {
     {
       role: 'assistant',
       content:
-        'Hello! I\'m the Data AI Systems assistant (Gemini). Ask about the services, or upload a PDF/CSV and I\'ll analyze it. For questions about the trading book, use the AI lab.',
+        'Hello! I\'m the Data AI Systems assistant (Gemini). Ask about the services, ask for the latest news on a stock (e.g. "latest news on MU"), or upload a PDF/CSV and I\'ll analyze it. For questions about the trading book, use the AI lab.',
     },
   ]);
   const [input, setInput] = useState('');
@@ -74,8 +83,16 @@ export default function AIChatWidget() {
           if (!reply) reply = 'No relevant content found in the uploaded file.';
         }
       } else {
-        const res = await genaiLLM(text);
-        reply = res.content;
+        // News first: the public route says whether this is a "latest news on
+        // MU" question and answers it from the feeds; anything else goes to
+        // the model as before.
+        const news = await newsAsk(text).catch(() => null);
+        if (news?.is_news && news.answer) {
+          reply = formatNews(news);
+        } else {
+          const res = await genaiLLM(text);
+          reply = res.content;
+        }
       }
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (err: any) {

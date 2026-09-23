@@ -136,6 +136,37 @@ export async function genaiLLM(prompt: string) {
   });
 }
 
+export interface NewsHeadline {
+  title: string;
+  source: string | null;
+  published: string | null;
+  url: string | null;
+  sentiment: string | null;
+}
+
+export interface NewsAnswer {
+  is_news: boolean;
+  symbol: string | null;
+  answer: string | null;
+  headlines: NewsHeadline[];
+}
+
+/**
+ * The public news route: "latest news on MU" answered from the RSS/Polygon
+ * headlines the pipeline stores. No token -- anonymous visitors use the chat
+ * widget -- and `is_news: false` means "not a news question, ask the model".
+ */
+export async function newsAsk(query: string): Promise<NewsAnswer> {
+  const res = await fetch(`${API_BASE}/api/news/ask`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: query.slice(0, 300) }),
+  });
+  if (res.status === 429) throw new Error('Too many news questions in a minute. Please wait a moment.');
+  if (!res.ok) throw new Error(`News error ${res.status}`);
+  return res.json();
+}
+
 export async function genaiQueryUpload(files: File[], query: string) {
   const formData = new FormData();
   files.forEach((f) => formData.append('files', f));
