@@ -30,6 +30,10 @@ export interface BrokerPosition {
   hold_until?: string | null;
   past_hold?: boolean | null;
   note?: string | null;
+  /** Identifies the structure for watchNow (section 232). */
+  key?: string | null;
+  /** "Start watching profits now" is in force: the stall watches the sale price from where it was pressed. */
+  watching_now?: boolean | null;
 }
 
 export interface PositionsResponse {
@@ -255,6 +259,12 @@ const qs = (params: object) =>
 
 export const trading = {
   positions: () => authJson<PositionsResponse>('/trading/positions'),
+  watchNow: (key: string) =>
+    authJson<{ key: string; queued_at: string; applies: string }>('/trading/positions/watch-now', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key }),
+    }),
   status: () => authJson<StatusResponse>('/trading/status'),
   history: () => authJson<HistoryResponse>('/trading/history'),
   playbooks: () => authJson<{ stats: PlaybookStat[]; unattributed_trades: number }>('/trading/playbook-performance'),

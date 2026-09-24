@@ -4,9 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import clsx from 'clsx';
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, ChevronDown, ChevronRight, Clock, Gauge,
-  Loader2, Power, RefreshCw, ShieldCheck, Target, TrendingUp, Zap,
+  Eye, Loader2, Power, RefreshCw, ShieldCheck, Target, TrendingUp, Zap,
 } from 'lucide-react';
 import RequireAuth from '@/components/RequireAuth';
+import { useAuth } from '@/components/AuthProvider';
 import MacroPanel from '@/components/MacroPanel';
 import {
   BrokerPosition, PositionsResponse, StatusResponse, fmtMoney, fmtNum, fmtPct, isExpiringToday, trading,
@@ -43,7 +44,46 @@ function StatCard({ icon: Icon, label, value, sub, tone }: { icon: React.Element
   );
 }
 
-function PositionRow({ p }: { p: BrokerPosition }) {
+/** Section 232: start this spread's stall from its current sale-price profit. */
+function WatchNowButton({ p, onDone }: { p: BrokerPosition; onDone: () => void }) {
+  const [state, setState] = useState<'idle' | 'busy' | 'queued' | 'error'>('idle');
+  const [err, setErr] = useState<string | null>(null);
+  if (p.watching_now) {
+    return <Chip tone="green"><Eye className="w-3 h-3" /> watching profits now</Chip>;
+  }
+  const press = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!p.key) return;
+    setState('busy');
+    try {
+      await trading.watchNow(p.key);
+      setState('queued');
+      onDone();
+    } catch (x: unknown) {
+      setErr(x instanceof Error ? x.message : 'failed');
+      setState('error');
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={press}
+      disabled={state === 'busy' || state === 'queued' || !p.key}
+      title={err ?? 'The stall watches the SALE PRICE from its current profit; each new high raises the level; after the stall window with no new high it sells once profit slips, never below the stall minimum gain. Applies on the next cycle.'}
+      className={clsx(
+        'inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border',
+        state === 'error'
+          ? 'bg-rose-950/60 text-rose-300 border-rose-800/60'
+          : 'bg-emerald-600/90 hover:bg-emerald-500 text-white border-emerald-500 disabled:opacity-60'
+      )}
+    >
+      {state === 'busy' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Eye className="w-3 h-3" />}
+      {state === 'queued' ? 'watching from next minute' : state === 'error' ? 'failed — retry' : 'Start watching profits now'}
+    </button>
+  );
+}
+
+function PositionRow({ p, isAdmin, onChanged }: { p: BrokerPosition; isAdmin: boolean; onChanged: () => void }) {
   const [open, setOpen] = useState(false);
   const width = Math.abs(p.short_strike - p.long_strike);
   const dte0 = isExpiringToday(p.expiry);
@@ -70,7 +110,8 @@ function PositionRow({ p }: { p: BrokerPosition }) {
                 <Chip tone={p.credit ? 'amber' : 'indigo'}>{p.credit ? 'credit' : 'debit'}</Chip>
                 <Chip tone={dte0 ? 'red' : 'slate'}>{dte0 ? '0DTE · flatten 15:45' : `expires ${expiry}`}</Chip>
                 {p.drag_blocks && <Chip tone="amber"><ShieldCheck className="w-3 h-3" /> drag guard</Chip>}
-                {p.stall_armed && <Chip tone="green"><Target className="w-3 h-3" /> stall armed</Chip>}
+                {p.stall_armed && !p.watching_now && <Chip tone="green"><Target className="w-3 h-3" /> stall armed</Chip>}
+                {dte0 && (isAdmin || p.watching_now) && <WatchNowButton p={p} onDone={onChanged} />}
                 {p.past_hold === false && <Chip tone="slate"><Clock className="w-3 h-3" /> hold to {p.hold_until}</Chip>}
               </div>
             </div>
@@ -122,6 +163,7 @@ function PositionRow({ p }: { p: BrokerPosition }) {
                 ['Stall give-back (pts of return)', fmtNum(p.stall_giveback_points, 1)],
                 ['Stall quiet minutes', fmtNum(p.stall_quiet_minutes, 0)],
                 ['Stall gain floor', p.stall_min_gain_pct !== null ? `+${p.stall_min_gain_pct}%` : '—'],
+                ['Watching profits now', p.watching_now ? 'yes (sale price)' : 'no'],
                 ['Hold window', p.hold_until ?? 'none'],
                 ['Stop confirm minutes', fmtNum(p.stop_confirm_minutes, 1)],
                 ['Width', String(width)],
@@ -142,6 +184,8 @@ function PositionRow({ p }: { p: BrokerPosition }) {
 }
 
 function Dashboard() {
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole('admin');
   const [positions, setPositions] = useState<PositionsResponse | null>(null);
   const [status, setStatus] = useState<StatusResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -268,7 +312,12 @@ function Dashboard() {
               </thead>
               <tbody>
                 {positions.positions.map((p) => (
-                  <PositionRow key={`${p.underlying}${p.expiry}${p.right}${p.long_strike}${p.short_strike}`} p={p} />
+                  <PositionRow
+                    key={`${p.underlying}${p.expiry}${p.right}${p.long_strike}${p.short_strike}`}
+                    p={p}
+                    isAdmin={isAdmin}
+                    onChanged={() => void load()}
+                  />
                 ))}
               </tbody>
             </table>
