@@ -33,7 +33,9 @@ rest to this app). `NEXT_PUBLIC_API_URL` is empty in production on purpose.
   week-anchored VWAP lean LONG/SHORT/MIXED and the IV/RV regime rich/fair/cheap,
   both shown and not ranked on), `/desk/controls`
   (kill switch, scheduler, tape read, two-step flatten — admin only),
-  `/desk/settings` (stop loss, stall, give-back, budgets: shows default,
+  `/desk/settings` (first: the three **trade buckets** -- QQQ 0DTE, single-stock
+  0DTE, single-stock weekly -- all OFF by default, switch on to allow new entries;
+  then stop loss, stall, give-back, budgets: shows default,
   `.env.production` and override per knob; saving is admin only and the next
   cron cycle trades on it, see `commands.txt` in the API repo).
 - Chat widget (every page) — **signed-in accounts only** (site or desk
