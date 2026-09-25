@@ -245,6 +245,26 @@ export interface MacroResponse {
   };
 }
 
+/** One entry run from the droplet's crontab (fastapi section 240). */
+export interface ScheduleJob {
+  book: 'dte0' | 'weekly' | string;
+  label: string;
+  days: string[];
+  times_et: string[];
+  every_minutes: number | null;
+  expiry: string;
+  max_trades: number | null;
+  symbols: string[] | null;
+  live_flag: boolean;
+  cron: string;
+}
+
+export interface ScheduleResponse {
+  jobs: ScheduleJob[];
+  snapshot_at: string | null;
+  note: string | null;
+}
+
 export interface SettingsResponse {
   path: string;
   settings: TradingSetting[];
@@ -276,6 +296,7 @@ export const trading = {
   killSwitch: (action: 'ACTIVATE' | 'DEACTIVATE') =>
     authJson<{ kill_switch_active: boolean }>(`/trading/kill-switch/toggle?action=${action}`, { method: 'POST' }),
   settings: () => authJson<SettingsResponse>('/trading/settings'),
+  schedule: () => authJson<ScheduleResponse>('/trading/schedule'),
   macro: () => authJson<MacroResponse>('/trading/macro'),
   updateSettings: (values: Record<string, string>, unset: string[] = []) =>
     authJson<SettingsResponse>('/trading/settings', {

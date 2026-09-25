@@ -1,10 +1,10 @@
 import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
-import { AlertTriangle, Loader2, RotateCcw, Save, ShieldAlert, SlidersHorizontal } from 'lucide-react';
+import { AlertTriangle, CalendarClock, Loader2, RotateCcw, Save, ShieldAlert, SlidersHorizontal } from 'lucide-react';
 import RequireAuth from '@/components/RequireAuth';
 import { useAuth } from '@/components/AuthProvider';
-import { SettingsResponse, TradingSetting, trading } from '@/lib/trading';
+import { ScheduleResponse, SettingsResponse, TradingSetting, trading } from '@/lib/trading';
 
 const btn = 'px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 inline-flex items-center gap-2';
 const input =
@@ -155,6 +155,8 @@ function Settings() {
         <div key={i} className="mb-2 text-xs text-amber-300">overrides file: {p}</div>
       ))}
 
+      <SchedulePanel />
+
       {!data ? (
         <div className="text-slate-400 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>
       ) : (
@@ -183,6 +185,56 @@ function Settings() {
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
           </button>
         </div>
+      )}
+    </div>
+  );
+}
+
+/** Read-only: when the single-stock books look for entries (section 240). The on/off
+ *  switch and budget for each book are in "Trade buckets" below. */
+function SchedulePanel() {
+  const [data, setData] = useState<ScheduleResponse | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => { trading.schedule().then(setData).catch((e: Error) => setErr(e.message)); }, []);
+  const when = (j: ScheduleResponse['jobs'][number]) =>
+    j.every_minutes && j.times_et.length > 2
+      ? `every ${j.every_minutes} min, ${j.times_et[0]}–${j.times_et[j.times_et.length - 1]} ET`
+      : `${j.times_et.join(', ')} ET`;
+  return (
+    <div className="mb-6 bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <h2 className="font-semibold text-white mb-1 flex items-center gap-2"><CalendarClock className="w-4 h-4 text-indigo-300" /> Entry schedule</h2>
+      <p className="text-xs text-slate-500 mb-3">
+        From the server&apos;s cron. Read-only. A run only places orders when its bucket switch below is on, within its budget and the buying power.
+      </p>
+      {err && <div className="text-sm text-rose-300">{err}</div>}
+      {!data && !err && <div className="text-slate-400 text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>}
+      {data && data.note && <div className="mb-2 text-xs text-amber-300">{data.note}</div>}
+      {data && data.jobs.length > 0 && (
+        <table className="w-full text-sm">
+          <thead className="text-xs uppercase tracking-wider text-slate-500">
+            <tr>
+              <th className="text-left py-2">Book</th>
+              <th className="text-left py-2">Days</th>
+              <th className="text-left py-2">When</th>
+              <th className="text-left py-2">Expiry</th>
+              <th className="text-right py-2">Max trades</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.jobs.map((j, i) => (
+              <tr key={i} className="border-t border-slate-800 align-top" title={j.cron + (j.symbols ? ` · ${j.symbols.join(', ')}` : '')}>
+                <td className="py-2 text-white">{j.label}</td>
+                <td className="py-2 text-slate-300">{j.days.join(' ')}</td>
+                <td className="py-2 text-slate-300 tabular-nums">{when(j)}</td>
+                <td className="py-2 text-slate-300">{j.expiry}</td>
+                <td className="py-2 text-right text-slate-300 tabular-nums">{j.max_trades ?? '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {data?.snapshot_at && (
+        <div className="mt-2 text-xs text-slate-600">cron read {new Date(data.snapshot_at).toLocaleString()}</div>
       )}
     </div>
   );
