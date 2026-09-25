@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { Loader2, Lock, Mail, MailCheck, User, UserPlus } from 'lucide-react';
 import { MIN_PASSWORD_LENGTH, signup } from '@/lib/auth';
+import PasswordInput from '@/components/PasswordInput';
 
 const field = 'mt-1 flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-3 focus-within:border-indigo-500';
 const inputCls = 'w-full bg-transparent py-2.5 text-slate-100 outline-none';
@@ -81,7 +82,7 @@ export default function SignUpPage() {
                   <span className="text-xs uppercase tracking-wider text-slate-400">Password</span>
                   <div className={field}>
                     <Lock className="w-4 h-4 text-slate-500" />
-                    <input type="password" required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} />
+                    <PasswordInput required minLength={MIN_PASSWORD_LENGTH} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} />
                   </div>
                   <span className="text-xs text-slate-500">At least {MIN_PASSWORD_LENGTH} characters.</span>
                 </label>
@@ -89,7 +90,7 @@ export default function SignUpPage() {
                   <span className="text-xs uppercase tracking-wider text-slate-400">Confirm password</span>
                   <div className={field}>
                     <Lock className="w-4 h-4 text-slate-500" />
-                    <input type="password" required autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputCls} />
+                    <PasswordInput required autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputCls} />
                   </div>
                 </label>
 

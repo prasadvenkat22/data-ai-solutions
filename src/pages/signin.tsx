@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Loader2, Lock, LogIn, Mail } from 'lucide-react';
 import { useSiteAuth } from '@/components/AuthProvider';
 import { safeNext } from '@/lib/auth';
+import PasswordInput from '@/components/PasswordInput';
 
 /** The general site's sign-in. Separate session from /login (the trading desk). */
 export default function SignInPage() {
@@ -71,8 +72,7 @@ export default function SignInPage() {
                 <span className="text-xs uppercase tracking-wider text-slate-400">Password</span>
                 <div className="mt-1 flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-3 focus-within:border-indigo-500">
                   <Lock className="w-4 h-4 text-slate-500" />
-                  <input
-                    type="password"
+                  <PasswordInput
                     autoComplete="current-password"
                     required
                     value={password}

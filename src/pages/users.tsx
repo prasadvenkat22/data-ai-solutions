@@ -8,6 +8,7 @@ import {
 import { api } from '@/lib/api';
 import { MIN_PASSWORD_LENGTH } from '@/lib/auth';
 import type { UserResponse } from '@/types';
+import PasswordInput from '@/components/PasswordInput';
 
 type TempPassword = { id: number; email: string; temporary_password: string; note: string };
 
@@ -243,9 +244,8 @@ function UsersPageInner() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1.5">Password *</label>
-                <input
+                <PasswordInput
                   required
-                  type="password"
                   minLength={MIN_PASSWORD_LENGTH}
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}

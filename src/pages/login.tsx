@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Loader2, Lock, LogIn, Mail } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { safeNext } from '@/lib/auth';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function LoginPage() {
   const { user, loading, login } = useAuth();
@@ -70,8 +71,7 @@ export default function LoginPage() {
                 <span className="text-xs uppercase tracking-wider text-slate-400">Password</span>
                 <div className="mt-1 flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-3 focus-within:border-indigo-500">
                   <Lock className="w-4 h-4 text-slate-500" />
-                  <input
-                    type="password"
+                  <PasswordInput
                     autoComplete="current-password"
                     required
                     value={password}

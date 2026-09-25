@@ -6,6 +6,7 @@ import { CheckCircle2, KeyRound, Loader2, Lock, Mail, Shield, UserCircle2 } from
 import RequireAuth from '@/components/RequireAuth';
 import { useAuth } from '@/components/AuthProvider';
 import { MIN_PASSWORD_LENGTH, changePassword } from '@/lib/auth';
+import PasswordInput from '@/components/PasswordInput';
 
 /**
  * The signed-in user's own account: who they are, and a change-password form
@@ -71,8 +72,7 @@ function AccountInner() {
       <span className="text-xs uppercase tracking-wider text-slate-400">{label}</span>
       <div className="mt-1 flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-3 focus-within:border-indigo-500">
         <Lock className="w-4 h-4 text-slate-500" />
-        <input
-          type="password"
+        <PasswordInput
           autoComplete={autoComplete}
           required
           minLength={minLength}

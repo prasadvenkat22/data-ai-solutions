@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { FormEvent, useState } from 'react';
 import { CheckCircle2, Loader2, Lock, LogIn } from 'lucide-react';
 import { MIN_PASSWORD_LENGTH, resetPassword } from '@/lib/auth';
+import PasswordInput from '@/components/PasswordInput';
 
 /**
  * The page the emailed reset link opens: /reset-password?token=...
@@ -92,8 +93,7 @@ export default function ResetPasswordPage() {
                   <span className="text-xs uppercase tracking-wider text-slate-400">New password</span>
                   <div className="mt-1 flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-3 focus-within:border-indigo-500">
                     <Lock className="w-4 h-4 text-slate-500" />
-                    <input
-                      type="password"
+                    <PasswordInput
                       autoComplete="new-password"
                       required
                       autoFocus
@@ -108,8 +108,7 @@ export default function ResetPasswordPage() {
                   <span className="text-xs uppercase tracking-wider text-slate-400">Confirm new password</span>
                   <div className="mt-1 flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-3 focus-within:border-indigo-500">
                     <Lock className="w-4 h-4 text-slate-500" />
-                    <input
-                      type="password"
+                    <PasswordInput
                       autoComplete="new-password"
                       required
                       value={confirm}
