@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
@@ -113,6 +113,14 @@ const navLinks: NavLink[] = [
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!accountOpen) return;
+    const close = (e: MouseEvent) => { if (!accountRef.current?.contains(e.target as Node)) setAccountOpen(false); };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [accountOpen]);
   const router = useRouter();
   // Two independent sessions: `user` is the trading desk's (it gates the
   // desk/admin menus), `siteUser` is the general site's Sign in / Sign up.
@@ -130,7 +138,7 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-700/50 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
@@ -143,8 +151,8 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-1">
+          {/* Desktop Nav -- only when there is room for it (the menu button covers narrower screens) */}
+          <div className="hidden 2xl:flex items-center gap-1">
             {links.map((link) => (
               <div
                 key={link.href}
@@ -185,68 +193,67 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* CTA / session */}
-          <div className="hidden md:flex items-center gap-2">
-            {/* General site */}
-            {siteUser ? (
-              <>
-                <span className="inline-flex items-center gap-1.5 px-2 py-2 text-xs text-slate-400" title={siteUser.email}>
-                  <UserCircle2 className="w-4 h-4" /> {siteUser.name || siteUser.email}
-                </span>
-                <button
-                  onClick={() => siteLogout()}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800"
-                >
-                  <LogOut className="w-4 h-4" /> Sign out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/signin" className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800">
-                  <LogIn className="w-4 h-4" /> Sign in
-                </Link>
-                <Link href="/signup" className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg border border-slate-700 hover:bg-slate-800">
-                  <UserPlus className="w-4 h-4" /> Sign up
-                </Link>
-              </>
-            )}
-            <span className="w-px h-6 bg-slate-700 mx-1" aria-hidden />
-            {/* Trading desk */}
-            {user ? (
-              <>
-                {/* The email is the way to /account (change password). */}
-                <Link
-                  href="/account"
-                  title="Your trading account"
-                  className={clsx(
-                    'inline-flex items-center gap-1.5 px-2 py-2 text-xs rounded-lg hover:bg-slate-800',
-                    router.pathname === '/account' ? 'text-white' : 'text-slate-400 hover:text-white'
-                  )}
-                >
-                  <CandlestickChart className="w-4 h-4" />
-                  {user.email}{user.role ? ` · ${user.role}` : ''}
-                </Link>
-                <button
-                  onClick={() => { logout(); void router.push('/'); }}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800"
-                >
-                  <LogOut className="w-4 h-4" /> Trading sign out
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-indigo-500/30"
+          {/* Session: one compact account menu, so Sign out can never be pushed off-screen */}
+          <div className="hidden md:flex items-center gap-2 ml-auto 2xl:ml-0">
+            <div className="relative" ref={accountRef}>
+              <button
+                type="button"
+                onClick={() => setAccountOpen((o) => !o)}
+                aria-haspopup="menu"
+                aria-expanded={accountOpen}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-200 hover:text-white rounded-lg border border-slate-700 hover:bg-slate-800 max-w-[16rem]"
               >
-                <CandlestickChart className="w-4 h-4" /> Trading sign in
-              </Link>
-            )}
+                <UserCircle2 className="w-4 h-4 shrink-0" />
+                <span className="truncate">{user?.email || siteUser?.name || siteUser?.email || 'Account'}</span>
+                <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+              </button>
+              {accountOpen && (
+                <div role="menu" className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-xl p-2 space-y-1">
+                  <div className="px-3 pt-1 text-[11px] uppercase tracking-wider text-slate-500">Site</div>
+                  {siteUser ? (
+                    <>
+                      <div className="px-3 py-1 text-xs text-slate-400 truncate" title={siteUser.email}>{siteUser.name || siteUser.email}</div>
+                      <button type="button" role="menuitem" onClick={() => { setAccountOpen(false); siteLogout(); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-lg">
+                        <LogOut className="w-4 h-4" /> Sign out
+                      </button>
+                    </>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2 px-1">
+                      <Link href="/signin" onClick={() => setAccountOpen(false)} className="flex items-center justify-center gap-1.5 px-3 py-2 text-sm text-slate-200 bg-slate-800 rounded-lg"><LogIn className="w-4 h-4" /> Sign in</Link>
+                      <Link href="/signup" onClick={() => setAccountOpen(false)} className="flex items-center justify-center gap-1.5 px-3 py-2 text-sm text-slate-200 border border-slate-700 rounded-lg"><UserPlus className="w-4 h-4" /> Sign up</Link>
+                    </div>
+                  )}
+                  <div className="my-1 border-t border-slate-800" />
+                  <div className="px-3 text-[11px] uppercase tracking-wider text-slate-500">Trading desk</div>
+                  {user ? (
+                    <>
+                      <Link href="/account" onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg" title="Your trading account">
+                        <CandlestickChart className="w-4 h-4" />
+                        <span className="truncate">{user.email}{user.role ? ` · ${user.role}` : ''}</span>
+                      </Link>
+                      <button type="button" role="menuitem" onClick={() => { setAccountOpen(false); logout(); void router.push('/'); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-lg">
+                        <LogOut className="w-4 h-4" /> Trading sign out
+                      </button>
+                    </>
+                  ) : (
+                    <Link href="/login" onClick={() => setAccountOpen(false)}
+                      className="flex items-center justify-center gap-1.5 mx-1 px-3 py-2 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg">
+                      <CandlestickChart className="w-4 h-4" /> Trading sign in
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            className="2xl:hidden p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -255,39 +262,8 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-slate-900 border-t border-slate-800 px-4 py-3 space-y-1">
-          {links.map((link) => (
-            <div key={link.href}>
-              <Link
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={clsx(
-                  'flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                  isActive(link.href)
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                )}
-              >
-                <link.icon className="w-4 h-4" />
-                {link.label}
-              </Link>
-              {link.children && (
-                <div className="ml-6 mt-1 space-y-1">
-                  {link.children.map((child) => (
-                    <Link
-                      key={child.href}
-                      href={child.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="block px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                    >
-                      {child.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-          <div className="pt-2 border-t border-slate-800 space-y-1">
+        <div className="2xl:hidden bg-slate-900 border-t border-slate-800 px-4 py-3 space-y-1 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain">
+          <div className="pb-3 mb-2 border-b border-slate-800 space-y-1">
             {siteUser ? (
               <button
                 onClick={() => { setMobileOpen(false); siteLogout(); }}
@@ -327,6 +303,37 @@ export default function Navbar() {
               </Link>
             )}
           </div>
+          {links.map((link) => (
+            <div key={link.href}>
+              <Link
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className={clsx(
+                  'flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  isActive(link.href)
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                )}
+              >
+                <link.icon className="w-4 h-4" />
+                {link.label}
+              </Link>
+              {link.children && (
+                <div className="ml-6 mt-1 space-y-1">
+                  {link.children.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="block px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </nav>
