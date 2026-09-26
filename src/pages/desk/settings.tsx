@@ -45,10 +45,16 @@ const VIEW_NOTE: Record<View, string> = {
 };
 
 /** Client-side mirror of settings_overrides.validate; the API has the final word. */
-/** What is sent: trimmed, and a trailing % dropped so "30%" means 30. */
+/** What is sent: trimmed, a trailing % dropped so "30%" means 30, and on a loss
+ *  threshold (a stop, whose range ends at 0) a positive number read as the loss it
+ *  names -- "10" on a stop means -10. */
 function clean(s: TradingSetting, v: string): string {
   const t = v.trim();
-  return s.kind === 'float' || s.kind === 'int' ? t.replace(/\s*%$/, '') : t;
+  if (s.kind !== 'float' && s.kind !== 'int') return t;
+  const u = t.replace(/\s*%$/, '');
+  const n = Number(u);
+  if (u !== '' && !Number.isNaN(n) && n > 0 && s.max === 0 && s.min !== null && s.min < 0) return String(-n);
+  return u;
 }
 
 function problem(s: TradingSetting, v: string): string | null {
