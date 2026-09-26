@@ -31,7 +31,7 @@ const VIEWS: { value: View; label: string }[] = [
   { value: 'w7', label: '7-day spreads' },
 ];
 function groupTypes(group: string): View[] {
-  if (group.startsWith('0DTE exits') || group.startsWith('QQQ engine exits')) return ['0dte'];
+  if (group.startsWith('0DTE') || group.startsWith('QQQ engine exits')) return ['0dte'];   // exits + stock strike selection
   if (group.startsWith('3-day')) return ['w3'];
   if (group.startsWith('7-day')) return ['w7'];
   if (group.startsWith('Weekly')) return ['w3', 'w7'];   // the shared defaults both types fall back to
