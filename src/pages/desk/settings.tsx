@@ -34,7 +34,7 @@ function groupTypes(group: string): View[] {
   if (group.startsWith('0DTE exits') || group.startsWith('QQQ engine exits')) return ['0dte'];
   if (group.startsWith('3-day')) return ['w3'];
   if (group.startsWith('7-day')) return ['w7'];
-  if (group.startsWith('Weekly exits')) return ['w3', 'w7'];
+  if (group.startsWith('Weekly')) return ['w3', 'w7'];   // the shared defaults both types fall back to
   return [];
 }
 const VIEW_NOTE: Record<View, string> = {
