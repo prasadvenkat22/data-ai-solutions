@@ -45,11 +45,17 @@ const VIEW_NOTE: Record<View, string> = {
 };
 
 /** Client-side mirror of settings_overrides.validate; the API has the final word. */
-function problem(s: TradingSetting, v: string): string | null {
+/** What is sent: trimmed, and a trailing % dropped so "30%" means 30. */
+function clean(s: TradingSetting, v: string): string {
   const t = v.trim();
+  return s.kind === 'float' || s.kind === 'int' ? t.replace(/\s*%$/, '') : t;
+}
+
+function problem(s: TradingSetting, v: string): string | null {
+  const t = clean(s, v);
   if (s.kind === 'bool') return null;
+  if (t === '' && s.allow_blank) return null;   // blank = off / follow the shared value
   if (s.kind === 'time') {
-    if (t === '' && s.allow_blank) return null;
     return /^([01]\d|2[0-3]):[0-5]\d$/.test(t) ? null : 'HH:MM';
   }
   if (t === '' || Number.isNaN(Number(t))) return 'number';
@@ -63,7 +69,7 @@ function problem(s: TradingSetting, v: string): string | null {
 function Row({ s, value, onChange, onRevert, readOnly }: {
   s: TradingSetting; value: string; onChange: (v: string) => void; onRevert: () => void; readOnly: boolean;
 }) {
-  const dirty = value !== s.effective;
+  const dirty = clean(s, value) !== s.effective;
   const err = dirty ? problem(s, value) : null;
   return (
     <tr className={clsx('border-t border-slate-800/70 align-top', dirty && 'bg-indigo-950/30')}>
@@ -75,6 +81,7 @@ function Row({ s, value, onChange, onRevert, readOnly }: {
       <td className="py-3 pr-2 whitespace-nowrap">
         {s.kind === 'bool' ? (
           <button
+            type="button"
             disabled={readOnly}
             onClick={() => onChange(value === 'true' ? 'false' : 'true')}
             className={clsx('w-16 py-1.5 rounded-lg text-xs font-semibold border disabled:opacity-60',
@@ -138,8 +145,11 @@ function Settings() {
     return [...mine.filter(([g]) => groupTypes(g).length === 1), ...mine.filter(([g]) => groupTypes(g).length > 1)];
   }, [data, view]);
 
-  const changed = data?.settings.filter((s) => draft[s.key] !== undefined && draft[s.key].trim() !== s.effective) ?? [];
-  const invalid = changed.some((s) => problem(s, draft[s.key]) !== null);
+  const changed = data?.settings.filter((s) => draft[s.key] !== undefined && clean(s, draft[s.key]) !== s.effective) ?? [];
+  // Every pending change, in ANY group -- the Trade type view can hide the row that is holding Save back.
+  const broken = changed.filter((s) => problem(s, draft[s.key]) !== null);
+  const invalid = broken.length > 0;
+  const drop = (key: string) => setDraft((d) => { const n = { ...d }; delete n[key]; return n; });
 
   const run = async (fn: () => Promise<SettingsResponse>, done: string) => {
     setBusy(true); setErr(null); setMsg(null);
@@ -149,10 +159,10 @@ function Settings() {
   };
 
   const save = () => {
-    const lines = changed.map((s) => `${s.label} (${s.group}): ${s.effective || 'blank'} → ${draft[s.key].trim() || 'blank'}`);
+    const lines = changed.map((s) => `${s.label} (${s.group}): ${s.effective || 'blank'} → ${clean(s, draft[s.key]) || 'blank'}`);
     if (!confirm(`Apply ${changed.length} change(s)?\n\n${lines.join('\n')}\n\nThese apply to OPEN positions from the next cycle (within a minute).`)) return;
     void run(
-      () => trading.updateSettings(Object.fromEntries(changed.map((s) => [s.key, draft[s.key].trim()]))),
+      () => trading.updateSettings(Object.fromEntries(changed.map((s) => [s.key, clean(s, draft[s.key])]))),
       `Saved ${changed.length} setting(s). The next cron cycle trades on them.`,
     );
   };
@@ -220,7 +230,20 @@ function Settings() {
 
       {isAdmin && data && (
         <div className="sticky bottom-4 mt-6 flex items-center justify-end gap-3 bg-slate-900/95 border border-slate-800 rounded-2xl px-4 py-3">
-          <span className="text-sm text-slate-400 mr-auto">{changed.length ? `${changed.length} unsaved change(s)` : 'No changes'}</span>
+          <div className="text-sm text-slate-400 mr-auto">
+            {changed.length ? `${changed.length} unsaved change(s)` : 'No changes'}
+            {changed.length > 0 && (
+              <div className="text-xs text-slate-500 mt-0.5">
+                {changed.map((c) => `${c.label} (${c.group.split(' (')[0]})`).join(' · ')}
+              </div>
+            )}
+            {broken.map((b) => (
+              <div key={b.key} className="text-xs text-rose-400 mt-0.5">
+                Can&apos;t save — {b.label} ({b.group.split(' (')[0]}): &ldquo;{draft[b.key]}&rdquo; is not valid ({problem(b, draft[b.key])}).{' '}
+                <button type="button" onClick={() => drop(b.key)} className="underline hover:text-rose-300">drop this change</button>
+              </div>
+            ))}
+          </div>
           <button disabled={busy || !changed.length} onClick={() => load(data)} className={clsx(btn, 'bg-slate-700 hover:bg-slate-600 text-white')}>Discard</button>
           <button disabled={busy || !changed.length || invalid} onClick={save} className={clsx(btn, 'bg-indigo-600 hover:bg-indigo-500 text-white')}>
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
