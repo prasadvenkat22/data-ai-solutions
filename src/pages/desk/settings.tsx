@@ -21,6 +21,29 @@ const SOURCE_LABEL: Record<TradingSetting['source'], string> = {
   default: 'code default',
 };
 
+/** Trade-type views (fastapi section 243). A group belongs to the types whose name it matches;
+ *  groups that match none (buckets, entries, gates, account) show under "All" only. */
+type View = 'all' | '0dte' | 'w3' | 'w7';
+const VIEWS: { value: View; label: string }[] = [
+  { value: 'all', label: 'All settings' },
+  { value: '0dte', label: '0DTE (same day)' },
+  { value: 'w3', label: '3-day spreads' },
+  { value: 'w7', label: '7-day spreads' },
+];
+function groupTypes(group: string): View[] {
+  if (group.startsWith('0DTE exits') || group.startsWith('QQQ engine exits')) return ['0dte'];
+  if (group.startsWith('3-day')) return ['w3'];
+  if (group.startsWith('7-day')) return ['w7'];
+  if (group.startsWith('Weekly exits')) return ['w3', 'w7'];
+  return [];
+}
+const VIEW_NOTE: Record<View, string> = {
+  all: '',
+  '0dte': 'Same-day positions, including any weekly on its expiry day. "Force close at" is the end-of-day flatten.',
+  w3: 'Spreads bought 2-4 days before expiry. A blank setting uses the shared weekly value shown below it.',
+  w7: 'Spreads bought 5+ days before expiry. A blank setting uses the shared weekly value shown below it.',
+};
+
 /** Client-side mirror of settings_overrides.validate; the API has the final word. */
 function problem(s: TradingSetting, v: string): string | null {
   const t = v.trim();
@@ -104,11 +127,16 @@ function Settings() {
   };
   useEffect(() => { trading.settings().then(load).catch((e: Error) => setErr(e.message)); }, []);
 
+  const [view, setView] = useState<View>('all');
   const groups = useMemo(() => {
     const out: Record<string, TradingSetting[]> = {};
     data?.settings.forEach((s) => { (out[s.group] ??= []).push(s); });
-    return Object.entries(out);
-  }, [data]);
+    const all = Object.entries(out);
+    if (view === 'all') return all;
+    // The type's own group first, then the shared group it falls back to.
+    const mine = all.filter(([g]) => groupTypes(g).includes(view));
+    return [...mine.filter(([g]) => groupTypes(g).length === 1), ...mine.filter(([g]) => groupTypes(g).length > 1)];
+  }, [data, view]);
 
   const changed = data?.settings.filter((s) => draft[s.key] !== undefined && draft[s.key].trim() !== s.effective) ?? [];
   const invalid = changed.some((s) => problem(s, draft[s.key]) !== null);
@@ -156,6 +184,19 @@ function Settings() {
       ))}
 
       <SchedulePanel />
+
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <label htmlFor="trade-type" className="text-sm text-slate-300">Trade type</label>
+        <select
+          id="trade-type"
+          value={view}
+          onChange={(e) => setView(e.target.value as View)}
+          className="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-indigo-500"
+        >
+          {VIEWS.map((v) => <option key={v.value} value={v.value}>{v.label}</option>)}
+        </select>
+        {VIEW_NOTE[view] && <span className="text-xs text-slate-500">{VIEW_NOTE[view]}</span>}
+      </div>
 
       {!data ? (
         <div className="text-slate-400 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>
