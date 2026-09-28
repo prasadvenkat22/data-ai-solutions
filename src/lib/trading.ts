@@ -236,7 +236,7 @@ export interface MacroResponse {
   };
   gates: MacroGate[];
   risk_off: boolean;
-  engine: { sentiment: string | null; status: string | null; at: string | null };
+  engine: { sentiment: string | null; status: string | null; at: string | null; block_reason?: string | null; fresh?: boolean };
   rotation: { verdict: string; confidence: number | null } | null;
   calendar: {
     event_day: boolean;

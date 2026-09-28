@@ -4,7 +4,7 @@ import { CalendarClock, Landmark, Loader2 } from 'lucide-react';
 import { MacroResponse, trading } from '@/lib/trading';
 
 /**
- * The engine's macro risk gates at a glance: 10Y / VIX / crude against the
+ * The engine's macro verdict at a glance: 10Y / VIX / crude / breadth against the
  * session open and the thresholds that force risk-off, the rotation's QQQ
  * macro verdict, and today's scheduled events and data releases. Risk-off
  * blocks new engine entries and call-debit rotation picks; it does not
@@ -34,7 +34,11 @@ export default function MacroPanel() {
           {m && (
             <span className={clsx('text-xs px-2 py-0.5 rounded-full border',
               m.risk_off ? 'bg-rose-950/60 text-rose-300 border-rose-800/60' : 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60')}>
-              {m.risk_off ? 'RISK-OFF: no new engine entries, no call debits' : 'risk gates clear'}
+              {!m.risk_off
+                ? 'macro GOOD: risk gates clear'
+                : m.engine.fresh && m.engine.sentiment === 'BAD' && m.engine.block_reason
+                  ? `macro BAD (${m.engine.block_reason}): bullish entries refused, put spreads allowed`
+                  : 'RISK-OFF: no new engine entries, no call debits'}
             </span>
           )}
         </div>
