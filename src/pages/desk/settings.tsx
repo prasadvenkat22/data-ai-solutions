@@ -64,6 +64,12 @@ function problem(s: TradingSetting, v: string): string | null {
   if (s.kind === 'time') {
     return /^([01]\d|2[0-3]):[0-5]\d$/.test(t) ? null : 'HH:MM';
   }
+  if (s.kind === 'tiers') {
+    const names = ['CLEAN', 'ZONE', 'STRICT', 'RELAXED', 'MOMENTUM', 'FADE', 'REJECT', 'TREND'];
+    if (/^(all|\*)$/i.test(t)) return null;
+    const parts = t.split(',').map((x) => x.trim().toUpperCase()).filter(Boolean);
+    return parts.length && parts.every((x) => names.includes(x)) ? null : 'e.g. CLEAN,ZONE or ALL';
+  }
   if (t === '' || Number.isNaN(Number(t))) return 'number';
   const n = Number(t);
   if (s.kind === 'int' && !Number.isInteger(n)) return 'whole number';
@@ -99,7 +105,7 @@ function Row({ s, value, onChange, onRevert, readOnly }: {
           <input
             disabled={readOnly}
             value={value}
-            inputMode={s.kind === 'time' ? 'text' : 'decimal'}
+            inputMode={s.kind === 'time' || s.kind === 'tiers' ? 'text' : 'decimal'}
             placeholder={s.kind === 'time' ? (s.allow_blank ? 'blank = off' : 'HH:MM') : ''}
             onChange={(e) => onChange(e.target.value)}
             className={clsx(input, err && 'border-rose-600 focus:border-rose-500')}

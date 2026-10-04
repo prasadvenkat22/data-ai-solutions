@@ -213,7 +213,7 @@ export interface TradingSetting {
   key: string;
   label: string;
   group: string;
-  kind: 'float' | 'int' | 'bool' | 'time';
+  kind: 'float' | 'int' | 'bool' | 'time' | 'tiers';
   default: string;
   help: string;
   unit: string;
