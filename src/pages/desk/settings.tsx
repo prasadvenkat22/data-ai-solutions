@@ -87,7 +87,7 @@ function Row({ s, value, onChange, onRevert, readOnly }: {
             disabled={readOnly}
             value={value}
             inputMode={s.kind === 'time' ? 'text' : 'decimal'}
-            placeholder={s.kind === 'time' ? (s.allow_blank ? 'blank = off' : 'HH:MM') : ''}
+            placeholder={s.kind === 'time' ? (s.allow_blank ? 'blank = off' : 'HH:MM') : (s.allow_blank ? 'default' : '')}
             onChange={(e) => onChange(e.target.value)}
             className={clsx(input, err && 'border-rose-600 focus:border-rose-500')}
           />
