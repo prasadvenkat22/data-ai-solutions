@@ -269,7 +269,7 @@ function SchedulePanel() {
     <div className="mb-6 bg-slate-900 border border-slate-800 rounded-2xl p-6">
       <h2 className="font-semibold text-white mb-1 flex items-center gap-2"><CalendarClock className="w-4 h-4 text-indigo-300" /> Entry schedule</h2>
       <p className="text-xs text-slate-500 mb-3">
-        From the server&apos;s cron. Read-only. A run only places orders when its book is On below, within its budget and the buying power.
+        Days and times come from the server&apos;s cron. Trades per run and Entries per day are set on each book&apos;s card below; a run only places orders when its book is On, within its budget and the buying power.
       </p>
       {err && <div className="text-sm text-rose-300">{err}</div>}
       {!data && !err && <div className="text-slate-400 text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>}
@@ -282,7 +282,7 @@ function SchedulePanel() {
               <th className="text-left py-2">Days</th>
               <th className="text-left py-2">When</th>
               <th className="text-left py-2">Expiry</th>
-              <th className="text-right py-2">Max trades</th>
+              <th className="text-right py-2">Trades per run</th>
             </tr>
           </thead>
           <tbody>
