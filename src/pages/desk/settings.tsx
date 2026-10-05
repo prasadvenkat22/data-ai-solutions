@@ -21,28 +21,15 @@ const SOURCE_LABEL: Record<TradingSetting['source'], string> = {
   default: 'code default',
 };
 
-/** Trade-type views (fastapi section 243). A group belongs to the types whose name it matches;
- *  groups that match none (buckets, entries, gates, account) show under "All" only. */
-type View = 'all' | '0dte' | 'w3' | 'w7';
-const VIEWS: { value: View; label: string }[] = [
-  { value: 'all', label: 'All settings' },
-  { value: '0dte', label: '0DTE (same day)' },
-  { value: 'w3', label: '3-day spreads' },
-  { value: 'w7', label: '7-day spreads' },
+/** The book cards (fastapi section 261). Every book shows the same core rows in the
+ *  same order; everything else is under Advanced. */
+const CARDS: { book: string; title: string; note: string }[] = [
+  { book: 'qqq', title: 'QQQ engine (0DTE)', note: 'Enters only on a 1-minute Bollinger band touch: lower band = call spread, upper band = put spread. Sells at the 20-SMA, the take profit or the stop.' },
+  { book: 's0', title: 'Single-stock 0DTE', note: 'Same-day stock spreads. Stop loss and take profit also manage manual trades and any weekly on its expiry day.' },
+  { book: 'w3', title: '3-day spreads', note: 'Stock spreads bought 2-4 days before expiry. The Bollinger band uses hourly bars.' },
+  { book: 'w7', title: '7-day spreads', note: 'Stock spreads bought 5+ days before expiry. The Bollinger band uses hourly bars.' },
+  { book: 'global', title: 'All books', note: 'Applies to every book.' },
 ];
-function groupTypes(group: string): View[] {
-  if (group.startsWith('0DTE') || group.startsWith('QQQ engine exits')) return ['0dte'];   // exits + stock strike selection
-  if (group.startsWith('3-day')) return ['w3'];
-  if (group.startsWith('7-day')) return ['w7'];
-  if (group.startsWith('Weekly')) return ['w3', 'w7'];   // the shared defaults both types fall back to
-  return [];
-}
-const VIEW_NOTE: Record<View, string> = {
-  all: '',
-  '0dte': 'Same-day positions, including any weekly on its expiry day. "Force close at" is the end-of-day flatten.',
-  w3: 'Spreads bought 2-4 days before expiry. A blank setting uses the shared weekly value shown below it.',
-  w7: 'Spreads bought 5+ days before expiry. A blank setting uses the shared weekly value shown below it.',
-};
 
 /** Client-side mirror of settings_overrides.validate; the API has the final word. */
 /** What is sent: trimmed, a trailing % dropped so "30%" means 30, and on a loss
@@ -63,12 +50,6 @@ function problem(s: TradingSetting, v: string): string | null {
   if (t === '' && s.allow_blank) return null;   // blank = off / follow the shared value
   if (s.kind === 'time') {
     return /^([01]\d|2[0-3]):[0-5]\d$/.test(t) ? null : 'HH:MM';
-  }
-  if (s.kind === 'tiers') {
-    const names = ['CLEAN', 'ZONE', 'STRICT', 'RELAXED', 'MOMENTUM', 'FADE', 'REJECT', 'TREND'];
-    if (/^(all|\*)$/i.test(t)) return null;
-    const parts = t.split(',').map((x) => x.trim().toUpperCase()).filter(Boolean);
-    return parts.length && parts.every((x) => names.includes(x)) ? null : 'e.g. CLEAN,ZONE or ALL';
   }
   if (t === '' || Number.isNaN(Number(t))) return 'number';
   const n = Number(t);
@@ -105,7 +86,7 @@ function Row({ s, value, onChange, onRevert, readOnly }: {
           <input
             disabled={readOnly}
             value={value}
-            inputMode={s.kind === 'time' || s.kind === 'tiers' ? 'text' : 'decimal'}
+            inputMode={s.kind === 'time' ? 'text' : 'decimal'}
             placeholder={s.kind === 'time' ? (s.allow_blank ? 'blank = off' : 'HH:MM') : ''}
             onChange={(e) => onChange(e.target.value)}
             className={clsx(input, err && 'border-rose-600 focus:border-rose-500')}
@@ -146,19 +127,19 @@ function Settings() {
   };
   useEffect(() => { trading.settings().then(load).catch((e: Error) => setErr(e.message)); }, []);
 
-  const [view, setView] = useState<View>('all');
-  const groups = useMemo(() => {
+  const cards = useMemo(() => CARDS.map((c) => ({
+    ...c,
+    rows: (data?.settings ?? []).filter((s) => s.book === c.book && s.order > 0).sort((a, b) => a.order - b.order),
+  })), [data]);
+  const advanced = useMemo(() => {
     const out: Record<string, TradingSetting[]> = {};
-    data?.settings.forEach((s) => { (out[s.group] ??= []).push(s); });
-    const all = Object.entries(out);
-    if (view === 'all') return all;
-    // The type's own group first, then the shared group it falls back to.
-    const mine = all.filter(([g]) => groupTypes(g).includes(view));
-    return [...mine.filter(([g]) => groupTypes(g).length === 1), ...mine.filter(([g]) => groupTypes(g).length > 1)];
-  }, [data, view]);
+    data?.settings.filter((s) => !s.book || s.order <= 0).forEach((s) => { (out[s.group] ??= []).push(s); });
+    return Object.entries(out);
+  }, [data]);
+  const where = (s: TradingSetting) => CARDS.find((c) => c.book === s.book)?.title ?? s.group.split(' (')[0];
 
   const changed = data?.settings.filter((s) => draft[s.key] !== undefined && clean(s, draft[s.key]) !== s.effective) ?? [];
-  // Every pending change, in ANY group -- the Trade type view can hide the row that is holding Save back.
+  // Every pending change, in ANY card -- a collapsed Advanced row can be the one holding Save back.
   const broken = changed.filter((s) => problem(s, draft[s.key]) !== null);
   const invalid = broken.length > 0;
   const drop = (key: string) => setDraft((d) => { const n = { ...d }; delete n[key]; return n; });
@@ -171,7 +152,7 @@ function Settings() {
   };
 
   const save = () => {
-    const lines = changed.map((s) => `${s.label} (${s.group}): ${s.effective || 'blank'} → ${clean(s, draft[s.key]) || 'blank'}`);
+    const lines = changed.map((s) => `${s.label} (${where(s)}): ${s.effective || 'blank'} → ${clean(s, draft[s.key]) || 'blank'}`);
     if (!confirm(`Apply ${changed.length} change(s)?\n\n${lines.join('\n')}\n\nThese apply to OPEN positions from the next cycle (within a minute).`)) return;
     void run(
       () => trading.updateSettings(Object.fromEntries(changed.map((s) => [s.key, clean(s, draft[s.key])]))),
@@ -189,8 +170,8 @@ function Settings() {
         <div className="inline-flex items-center gap-2 text-indigo-300 text-sm mb-2"><SlidersHorizontal className="w-4 h-4" /> Auto-Trader · settings</div>
         <h1 className="text-3xl font-bold text-white">Engine settings</h1>
         <p className="text-slate-400 text-sm mt-1">
-          Stop loss, stall, give-back, budgets. Saving writes an override that beats .env.production and is picked up by the
-          next cron cycle, no restart. It applies to positions already open. The rule columns on Positions update after the next app restart.
+          One card per book, all with the same rows. Saving writes an override that beats .env.production and is picked up by the
+          next cron cycle, no restart. It applies to positions already open. Everything else is under Advanced at the bottom.
         </p>
       </div>
 
@@ -207,29 +188,17 @@ function Settings() {
 
       <SchedulePanel />
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <label htmlFor="trade-type" className="text-sm text-slate-300">Trade type</label>
-        <select
-          id="trade-type"
-          value={view}
-          onChange={(e) => setView(e.target.value as View)}
-          className="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-100 outline-none focus:border-indigo-500"
-        >
-          {VIEWS.map((v) => <option key={v.value} value={v.value}>{v.label}</option>)}
-        </select>
-        {VIEW_NOTE[view] && <span className="text-xs text-slate-500">{VIEW_NOTE[view]}</span>}
-      </div>
-
       {!data ? (
         <div className="text-slate-400 flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>
       ) : (
         <div className="space-y-6">
-          {groups.map(([group, rows]) => (
-            <div key={group} className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-              <h2 className="font-semibold text-white mb-2">{group}</h2>
+          {cards.filter((c) => c.rows.length > 0).map((c) => (
+            <div key={c.book} className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+              <h2 className="font-semibold text-white">{c.title}</h2>
+              <p className="text-xs text-slate-500 mb-2">{c.note}</p>
               <table className="w-full">
                 <tbody>
-                  {rows.map((s) => (
+                  {c.rows.map((s) => (
                     <Row key={s.key} s={s} readOnly={!isAdmin || busy} value={draft[s.key] ?? s.effective}
                       onChange={(v) => setDraft((d) => ({ ...d, [s.key]: v }))} onRevert={() => revert(s)} />
                   ))}
@@ -237,6 +206,26 @@ function Settings() {
               </table>
             </div>
           ))}
+          <details className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+            <summary className="cursor-pointer font-semibold text-slate-300">
+              Advanced ({advanced.reduce((n, [, rows]) => n + rows.length, 0)} settings)
+            </summary>
+            <div className="space-y-6 mt-4">
+              {advanced.map(([group, rows]) => (
+                <div key={group}>
+                  <h3 className="font-medium text-slate-200 mb-2">{group}</h3>
+                  <table className="w-full">
+                    <tbody>
+                      {rows.map((s) => (
+                        <Row key={s.key} s={s} readOnly={!isAdmin || busy} value={draft[s.key] ?? s.effective}
+                          onChange={(v) => setDraft((d) => ({ ...d, [s.key]: v }))} onRevert={() => revert(s)} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </div>
+          </details>
         </div>
       )}
 
@@ -246,12 +235,12 @@ function Settings() {
             {changed.length ? `${changed.length} unsaved change(s)` : 'No changes'}
             {changed.length > 0 && (
               <div className="text-xs text-slate-500 mt-0.5">
-                {changed.map((c) => `${c.label} (${c.group.split(' (')[0]})`).join(' · ')}
+                {changed.map((c) => `${c.label} (${where(c)})`).join(' · ')}
               </div>
             )}
             {broken.map((b) => (
               <div key={b.key} className="text-xs text-rose-400 mt-0.5">
-                Can&apos;t save — {b.label} ({b.group.split(' (')[0]}): &ldquo;{draft[b.key]}&rdquo; is not valid ({problem(b, draft[b.key])}).{' '}
+                Can&apos;t save — {b.label} ({where(b)}): &ldquo;{draft[b.key]}&rdquo; is not valid ({problem(b, draft[b.key])}).{' '}
                 <button type="button" onClick={() => drop(b.key)} className="underline hover:text-rose-300">drop this change</button>
               </div>
             ))}
@@ -267,7 +256,7 @@ function Settings() {
 }
 
 /** Read-only: when the single-stock books look for entries (section 240). The on/off
- *  switch and budget for each book are in "Trade buckets" below. */
+ *  switch and budget for each book are on its card below. */
 function SchedulePanel() {
   const [data, setData] = useState<ScheduleResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -280,7 +269,7 @@ function SchedulePanel() {
     <div className="mb-6 bg-slate-900 border border-slate-800 rounded-2xl p-6">
       <h2 className="font-semibold text-white mb-1 flex items-center gap-2"><CalendarClock className="w-4 h-4 text-indigo-300" /> Entry schedule</h2>
       <p className="text-xs text-slate-500 mb-3">
-        From the server&apos;s cron. Read-only. A run only places orders when its bucket switch below is on, within its budget and the buying power.
+        From the server&apos;s cron. Read-only. A run only places orders when its book is On below, within its budget and the buying power.
       </p>
       {err && <div className="text-sm text-rose-300">{err}</div>}
       {!data && !err && <div className="text-slate-400 text-sm flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>}

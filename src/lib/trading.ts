@@ -213,13 +213,17 @@ export interface TradingSetting {
   key: string;
   label: string;
   group: string;
-  kind: 'float' | 'int' | 'bool' | 'time' | 'tiers';
+  kind: 'float' | 'int' | 'bool' | 'time';
   default: string;
   help: string;
   unit: string;
   min: number | null;
   max: number | null;
   allow_blank: boolean;
+  // Settings-page card (fastapi section 261): qqq / s0 / w3 / w7 / global, and
+  // its sort order. order 0 = an Advanced row.
+  book: string;
+  order: number;
   env_value: string | null;
   override: string | null;
   effective: string;
