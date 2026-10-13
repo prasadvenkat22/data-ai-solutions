@@ -102,6 +102,7 @@ const navLinks: NavLink[] = [
     children: [
       { label: 'Positions', href: '/desk' },
       { label: 'Closed trades', href: '/desk/history' },
+      { label: 'Decisions', href: '/desk/decisions' },
       { label: 'Screener board', href: '/desk/board' },
       { label: 'Engine controls', href: '/desk/controls' },
       { label: 'Engine settings', href: '/desk/settings' },

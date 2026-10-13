@@ -230,6 +230,11 @@ export interface TradingSetting {
   source: 'override' | 'env' | 'default';
 }
 
+// Why the engine did or did not trade on a day (GET /trading/decisions).
+export interface DecisionEvent { ts: string; et: string; kind: string; level: string; text: string }
+export interface SettingChange { et: string; who: string; key: string; change: string }
+export interface DecisionsResponse { date: string; events: DecisionEvent[]; settings_changes: SettingChange[] }
+
 // The engine's macro risk gates right now (GET /trading/macro).
 export interface MacroGate { name: string; value: string; limit: string; tripped: boolean }
 export interface MacroResponse {
@@ -300,6 +305,7 @@ export const trading = {
   killSwitch: (action: 'ACTIVATE' | 'DEACTIVATE') =>
     authJson<{ kill_switch_active: boolean }>(`/trading/kill-switch/toggle?action=${action}`, { method: 'POST' }),
   settings: () => authJson<SettingsResponse>('/trading/settings'),
+  decisions: (date = '') => authJson<DecisionsResponse>(`/trading/decisions${date ? `?date=${date}` : ''}`),
   schedule: () => authJson<ScheduleResponse>('/trading/schedule'),
   macro: () => authJson<MacroResponse>('/trading/macro'),
   updateSettings: (values: Record<string, string>, unset: string[] = []) =>
